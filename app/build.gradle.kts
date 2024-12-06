@@ -63,6 +63,8 @@ dependencies {
     implementation(files("libs/IGLBarDecoder.jar"))
     implementation(files("libs/xUtils-2.5.5.jar"))
     implementation(files("libs/jxl.jar"))
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
