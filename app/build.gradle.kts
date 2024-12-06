@@ -1,16 +1,16 @@
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.application)  version "8.5.0"
     alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 android {
     namespace = "com.crms.crmsAndroid"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.crms.crmsAndroid"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -59,6 +59,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(files("libs/DeviceAPI-debug.aar"))
+    implementation(files("libs/IGLBarDecoder.jar"))
+    implementation(files("libs/xUtils-2.5.5.jar"))
+    implementation(files("libs/jxl.jar"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
