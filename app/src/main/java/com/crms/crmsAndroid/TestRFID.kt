@@ -5,6 +5,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import androidx.activity.ComponentActivity
+import com.crms.crmsAndroid.scanner.rfidScanner
 import com.rscja.deviceapi.RFIDWithUHFUART
 import com.rscja.deviceapi.entity.*
 import com.rscja.deviceapi.interfaces.IUHF
@@ -33,33 +34,28 @@ class TestRFID : ComponentActivity() {
     // 處理 btnScan 按鈕的點擊事件
     private fun handleBtnScanClick(adapter: ArrayAdapter<String>) {
         var rfidData = "無法掃描到 RFID 訊號"
+        var sc:rfidScanner? = null
         try {
-            val RFIDscanner: RFIDWithUHFUART = RFIDWithUHFUART.getInstance()
-            if (RFIDscanner == null) {
-                rfidData = "無法取得 RFIDscanner 物件"
-            } else {
-                rfidData = "取得 RFIDscanner 物件"
-            }
-            appendTextToList(rfidData, adapter)
+            sc = rfidScanner()
+            val scanner = sc.getScanner()
+            val tag = scanner.inventorySingleTag()
+            if (tag != null) {
+                rfidData = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
 
-            val b:Boolean = RFIDscanner.init()
-            rfidData = "初始化 RFIDscanner 物件: $b"
-            appendTextToList(rfidData, adapter)
-            var Bank = 2
-            when (Bank) {
-                0 -> Bank = IUHF.Bank_RESERVED
-                1 -> Bank = IUHF.Bank_EPC
-                2 -> Bank = IUHF.Bank_TID
-                3 -> Bank = IUHF.Bank_USER
+            }else{
+                rfidData = "無法掃描到 RFID 訊號"
             }
-            rfidData = RFIDscanner.readData("00000000",Bank,0,6)
-            appendTextToList(rfidData, adapter)
         } catch (e: Exception) {
             rfidData = e.message.toString() // 捕獲異常
+        }finally {
+            if(sc != null){
+                sc.free()
+            }
         }
 
         val newText = "新掃描項目 $rfidData"
         appendTextToList(newText, adapter)
+
     }
 
     // 將文本追加到 ListView
