@@ -17,7 +17,8 @@ class TestRFID : ComponentActivity() {
     private lateinit var spnBank: Spinner
     private val items = mutableListOf<String>() // 用於存放 ListView 的數據
     init {
-        System.loadLibrary("") // 不要包含 "lib" 前綴或 ".so" 後綴
+        System.loadLibrary("IGLBarDecoder") // 加載 libIGLBarDecoder.so
+        System.loadLibrary("IGLImageAE")    // 加載 libIGLImageAE.so
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
