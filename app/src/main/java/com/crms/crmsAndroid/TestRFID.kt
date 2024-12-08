@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
+import android.widget.Spinner
 import androidx.activity.ComponentActivity
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.rscja.deviceapi.RFIDWithUHFUART
@@ -13,13 +14,19 @@ import com.rscja.deviceapi.interfaces.IUHF
 class TestRFID : ComponentActivity() {
     private lateinit var lvMain: ListView
     private lateinit var btnScan: Button
+    private lateinit var spnBank: Spinner
     private val items = mutableListOf<String>() // 用於存放 ListView 的數據
+    init {
+        System.loadLibrary("") // 不要包含 "lib" 前綴或 ".so" 後綴
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_testrfid)
 
         lvMain = findViewById(R.id.lvMain)
         btnScan = findViewById(R.id.btnScan)
+        spnBank = findViewById(R.id.spnBank)
 
         // 設定 ListView 的適配器
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items)
@@ -29,6 +36,16 @@ class TestRFID : ComponentActivity() {
         btnScan.setOnClickListener {
             handleBtnScanClick(adapter)
         }
+
+        // 設定 Spinner 的適配器
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.bank_array,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spnBank.adapter = adapter
+        }
     }
 
     // 處理 btnScan 按鈕的點擊事件
@@ -37,8 +54,11 @@ class TestRFID : ComponentActivity() {
         var sc:rfidScanner? = null
         try {
             sc = rfidScanner()
-            val scanner = sc.getScanner()
+            val scanner = sc.getScanner();
             val tag = scanner.inventorySingleTag()
+            tag.reserved = sc.readTag(0)
+            tag.tid = sc.readTag(2)
+            tag.user = sc.readTag(3)
             if (tag != null) {
                 rfidData = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
 
