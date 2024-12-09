@@ -104,10 +104,22 @@ class rfidScanner {
             }
         }
     }
-
-    fun setFilter(filterBank: Int?, filterData: String?) {
+    /**
+     * Sets a filter for the RFID scanner. This function allows the user to specify a filter bank and filter data. If either parameter is null, filter will be cancel.
+     *
+     * @param filterBank the memory bank to apply the filter to, or null to clear the filter.
+     * @param filterData the data to filter, or null to clear the filter.
+     * @return true if the filter was set successfully, false otherwise.
+     */
+    fun setFilter(filterBank: Int?, filterData: String?): Boolean {
         this.filterBank = filterBank
         this.filterData = filterData
+        if (filterBank == null || filterData == null) {
+            return this.scanner.setFilter(1, 0, 0, "")
+        } else {
+            val (filterPtr, filterCnt) = makePtrAndCnt(filterBank)
+            return this.scanner.setFilter(filterBank, filterPtr, filterCnt, filterData)
+        }
     }
 
     fun readTagWithFilter(readBank: Int, filterBank: Int, filterData: String): String {
