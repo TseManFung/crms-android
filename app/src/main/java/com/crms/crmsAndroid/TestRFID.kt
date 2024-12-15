@@ -9,8 +9,11 @@ import android.widget.Button
 import android.widget.ListView
 import android.widget.Spinner
 import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.rscja.deviceapi.entity.UHFTAGInfo
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class TestRFID : ComponentActivity() {
     private lateinit var lvMain: ListView
@@ -56,7 +59,7 @@ class TestRFID : ComponentActivity() {
             spnBank.adapter = adapter
         }
 
-        appendTextToList("RFID 版本: ${objRfidScanner.getVersion()} | set Mode: ${this.objRfidScanner.setMode()}") // 獲取 RFID 版本
+        appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}") // 獲取 RFID 版本
 
     }
 
@@ -86,13 +89,31 @@ class TestRFID : ComponentActivity() {
 //                rfidData = "無法掃描到 RFID 訊號"
 //            }
 
-            val handler1: Handler = object : Handler() {
-                override fun handleMessage(msg: Message) {
-                    appendTextToList(msg.obj.toString())
+            // read loop using handler and thread
+//            val handler1: Handler = object : Handler() {
+//                override fun handleMessage(msg: Message) {
+//                    appendTextToList(msg.obj.toString())
+//                }
+//            }
+//            objRfidScanner.readTagLoop()
+//            readLoopForTest(objRfidScanner, handler1).start()
+
+            objRfidScanner.readTagLoop()
+
+            lifecycleScope.launch {
+                appendTextToList("Start reading RFID tags...")
+
+                while (objRfidScanner.loopFlag) {
+                    val tag = objRfidScanner.scanner.readTagFromBuffer()
+                    if (tag != null) {
+                        val message = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+                        appendTextToList(message)
+                    } else {
+                        // 如果没有标签，稍作等待
+                        delay(100)
+                    }
                 }
             }
-            objRfidScanner.readTagLoop()
-            readLoopForTest(objRfidScanner, handler1).start()
 
         } catch (e: Exception) {
             rfidData = e.message.toString() // 捕獲異常
@@ -112,29 +133,31 @@ class TestRFID : ComponentActivity() {
         items.add(text) // 將新文本添加到列表中
         listAdapter.notifyDataSetChanged() // 通知適配器數據已更新
     }
-    open class readLoopForTest(private val objRfidScanner: rfidScanner, private val handler: Handler) : Thread() {
-        override fun run() {
-            val msg = handler.obtainMessage()
-            msg.obj = "start"
-            handler.sendMessage(msg)
-            while (objRfidScanner.loopFlag){
-                val tag = objRfidScanner.scanner.readTagFromBuffer()
-                if (tag != null) {
-                    val msg = handler.obtainMessage()
-                    msg.obj = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
-                    handler.sendMessage(msg)
-                }else{
-                    try {
-                        Thread.sleep(100)
-                    }catch (e: InterruptedException){
-                        e.printStackTrace()
-                    }
-                }
-            }
-        }
-    }
 
-//    this is a sample code for readLoop in real project
+    // read loop using handler and thread
+//    open class readLoopForTest(private val objRfidScanner: rfidScanner, private val handler: Handler) : Thread() {
+//        override fun run() {
+//            val msg = handler.obtainMessage()
+//            msg.obj = "start"
+//            handler.sendMessage(msg)
+//            while (objRfidScanner.loopFlag){
+//                val tag = objRfidScanner.scanner.readTagFromBuffer()
+//                if (tag != null) {
+//                    val msg = handler.obtainMessage()
+//                    msg.obj = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+//                    handler.sendMessage(msg)
+//                }else{
+//                    try {
+//                        Thread.sleep(100)
+//                    }catch (e: InterruptedException){
+//                        e.printStackTrace()
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+//    this is a sample code for readLoop in real project using handler and thread
 //    class readLoop(private val objRfidScanner: rfidScanner): Thread() {
 //        init {
 //            this.start()

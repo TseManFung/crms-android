@@ -1,8 +1,9 @@
 package com.crms.crmsAndroid.scanner
 
-import android.os.Looper
 import com.rscja.deviceapi.RFIDWithUHFUART
 import com.rscja.deviceapi.interfaces.ConnectionStatus
+import com.rscja.deviceapi.interfaces.IUHF.*
+import java.util.ArrayList
 
 class rfidScanner {
     lateinit var scanner: RFIDWithUHFUART
@@ -11,6 +12,7 @@ class rfidScanner {
     private val defaultPassword = "00000000"
     private var filterBank: Int? = null
     private var filterData: String? = null
+    private val lockCode:String;
     var loopFlag = false
 
     init {
@@ -19,25 +21,47 @@ class rfidScanner {
         if (!isInit) {
             throw Exception("Failed to initialize RFID scanner");
         }
-//        this.scanner.setEPCAndTIDUserModeEx(2, 0, 6, 0, 2)
+        setMode()
+        val lockBank:ArrayList<Int> = arrayListOf(LockBank_EPC,LockBank_TID,LockBank_USER,LockBank_ACCESS,LockBank_KILL)
+        lockCode = this.scanner.generateLockCode(lockBank,LockMode_LOCK)
     }
 
+    /**
+     * Sets the mode for the RFID scanner.
+     * @return true if the mode was set successfully, false otherwise.
+     */
     fun setMode(): Boolean {
         return this.scanner.setEPCAndTIDUserMode(0, 2)
     }
 
+    /**
+     * Releases the resources used by the RFID scanner.
+     * @return true if the resources were released successfully, false otherwise.
+     */
     fun free(): Boolean {
         return this.scanner.free();
     }
 
+    /**
+     * Sets the password for accessing the RFID scanner.
+     * @param password New password to be set.
+     */
     fun setPassword(password: String) {
         this.password = password
     }
 
+    /**
+     * Gets the connection status of the RFID scanner.
+     * @return the current connection status.
+     */
     fun getConnectStatus(): ConnectionStatus {
         return this.scanner.getConnectStatus()
     }
 
+    /**
+     * Gets the version of the RFID scanner.
+     * @return the version as a String.
+     */
     fun getVersion(): String {
         return this.scanner.getVersion()
     }
@@ -47,25 +71,26 @@ class rfidScanner {
         val cnt: Int
 
         when (bank) {
-            0 -> {
+
+            Bank_RESERVED -> {
                 // Reserved
                 ptr = 0
                 cnt = 4
             }
 
-            1 -> {
+            Bank_EPC -> {
                 // EPC
                 ptr = 2
                 cnt = 6
             }
 
-            2 -> {
+            Bank_TID -> {
                 // TID
                 ptr = 0
                 cnt = 6
             }
 
-            3 -> {
+            Bank_USER -> {
                 // User
                 ptr = 0
                 cnt = 2
@@ -89,6 +114,12 @@ class rfidScanner {
         }
     }
 
+    /**
+     * Reads data from the specified memory bank.
+     * @param readBank the memory bank to read from.
+     * @return the data read from the tag.
+     * @throws Exception if reading fails.
+     */
     fun readTag(readBank: Int): String {
         val (ptr, cnt) = makePtrAndCnt(readBank)
 
@@ -104,6 +135,7 @@ class rfidScanner {
             }
         }
     }
+
     /**
      * Sets a filter for the RFID scanner. This function allows the user to specify a filter bank and filter data. If either parameter is null, filter will be cancel.
      *
@@ -112,16 +144,27 @@ class rfidScanner {
      * @return true if the filter was set successfully, false otherwise.
      */
     fun setFilter(filterBank: Int?, filterData: String?): Boolean {
+        if (filterBank == 0) {
+            throw IllegalArgumentException("Invalid filter bank value, filter bank cannot be Reserved Bank")
+        }
         this.filterBank = filterBank
         this.filterData = filterData
         if (filterBank == null || filterData == null) {
             return this.scanner.setFilter(1, 0, 0, "")
         } else {
             val (filterPtr, filterCnt) = makePtrAndCnt(filterBank)
-            return this.scanner.setFilter(filterBank, filterPtr, filterCnt, filterData)
+            return this.scanner.setFilter(filterBank, filterPtr, filterCnt * 16, filterData)
         }
     }
 
+    /**
+     * Reads a tag with an applied filter.
+     * @param readBank the memory bank to read from.
+     * @param filterBank the memory bank to filter on.
+     * @param filterData the data to filter.
+     * @return the data read from the tag.
+     * @throws Exception if reading fails.
+     */
     fun readTagWithFilter(readBank: Int, filterBank: Int, filterData: String): String {
         if (filterBank == 0) {
             throw IllegalArgumentException("Invalid filter bank value, filter bank cannot be Reserved Bank")
@@ -129,79 +172,190 @@ class rfidScanner {
         this.setFilter(filterBank, filterData)
         return this.readTagWithFilter(readBank)
     }
-
+    /**
+     * Reads a tag with the current applied filter.
+     * @param readBank the memory bank to read from.
+     * @return the data read from the tag.
+     * @throws IllegalArgumentException if filter is not set.
+     */
     fun readTagWithFilter(readBank: Int): String {
         if (this.filterBank == null || this.filterData == null) {
             throw IllegalArgumentException("Filter not set")
         }
         val (readPtr, readCnt) = makePtrAndCnt(readBank)
         val (filterPtr, filterCnt) = makePtrAndCnt(filterBank!!)
-        var TagData = this.scanner.readData(
+        var tagData = this.scanner.readData(
             password,
             filterBank!!,
             filterPtr,
-            filterCnt,
+            filterCnt * 16,
             filterData!!,
             readBank,
             readPtr,
             readCnt
         )
-        if (TagData != null) {
-            return TagData
+        if (tagData != null) {
+            return tagData
         } else {
-            TagData = this.scanner.readData(
+            tagData = this.scanner.readData(
                 defaultPassword,
                 filterBank!!,
                 filterPtr,
-                filterCnt,
+                filterCnt * 16,
                 filterData!!,
                 readBank,
                 readPtr,
                 readCnt
             )
-            if (TagData != null) {
-                return TagData
+            if (tagData != null) {
+                return tagData
             } else {
                 throw Exception("Failed to read tag from ${bankErrorMsg(readBank)}")
             }
         }
     }
-
+    /**
+     * Starts the tag reading loop.
+     */
     fun readTagLoop() {
         // only can read EPC / Tid
         this.scanner.startInventoryTag()
         this.loopFlag = true
     }
 
+    /**
+     * Stops the tag reading loop.
+     */
     fun stopReadTagLoop() {
         this.loopFlag = false
         this.scanner.stopInventory()
     }
 
-//    pri fun lockTag{
-//        this.scanner.lockMem
-//    }
-//
-//
+    /**
+     * Starts the tag reading loop with a filter applied.
+     * @param filterBank the memory bank to filter on.
+     * @param filterData the data to filter.
+     */
+    fun readTagLoopwithFilter(filterBank: Int, filterData: String) {
+        this.setFilter(filterBank, filterData)
+        this.readTagLoop()
+    }
 
-//
-//    fun readTagLoop{
-//        this.scanner.readData
-//    }
-//
-//    fun readTagLoop{
-//        //specific tag
-//        this.scanner.readData
-//    }
-//
-//    fun stopReadTagLoop{
-//        this.scanner.stopReadData
-//    }
-//
-//    fun writeTagWithFilter{
-//        //specific tag
-//        this.scanner.writeData
-//    }
+    /**
+     * Sets the power level for the RFID scanner.
+     * @param power the power level to set (default is 5).
+     * @throws IllegalArgumentException if the power value is invalid.
+     */
+    fun setPower(power: Int = 5) {
+        if (power <= 0 || power > 30) {
+            throw IllegalArgumentException("Invalid power value")
+        }
+        this.scanner.setPower(power)
+    }
+    private fun lockTag(): Boolean {
+        return this.scanner.lockMem(this.password, this.lockCode)
+    }
+
+    /**
+     * Writes data to a specified memory bank.
+     * @param writeBank the memory bank to write to.
+     * @param data the data to write.
+     * @return true if the write operation was successful, false otherwise.
+     */
+    fun writeTag(writeBank: Int, data: String): Boolean {
+        val originalPower:Int = this.scanner.power
+        if (this.scanner.power > 5){
+            this.scanner.setPower(5)
+        }
+        val (ptr, cnt) = makePtrAndCnt(writeBank)
+        var result = this.scanner.writeData(password, writeBank, ptr, cnt, data)
+        if (result) {
+            this.scanner.setPower(originalPower)
+            return true
+        } else {
+            result = this.scanner.writeData(defaultPassword, writeBank, ptr, cnt, data)
+            lockTag()
+            if (result) {
+                this.scanner.setPower(originalPower)
+                return true
+            }else{
+                this.scanner.setPower(originalPower)
+                return false
+            }
+        }
+    }
+
+    /**
+     * Writes data to a specified memory bank with an applied filter.
+     * @param writeBank the memory bank to write to.
+     * @param data the data to write.
+     * @param filterBank the memory bank to filter on.
+     * @param filterData the data to filter.
+     * @return true if the write operation was successful, false otherwise.
+     * @throws IllegalArgumentException if the filter bank value is invalid.
+     */
+    fun writeTagWithFiliter(writeBank: Int, data: String, filterBank: Int, filterData: String): Boolean {
+        if (filterBank == 0) {
+            throw IllegalArgumentException("Invalid filter bank value, filter bank cannot be Reserved Bank")
+        }
+        this.setFilter(filterBank, filterData)
+        return this.writeTagWithFiliter(writeBank, data)
+    }
+
+    /**
+     * Writes data to a specified memory bank with the current applied filter.
+     * @param writeBank the memory bank to write to.
+     * @param data the data to write.
+     * @return true if the write operation was successful, false otherwise.
+     * @throws IllegalArgumentException if the filter is not set.
+     */
+    fun writeTagWithFiliter(writeBank: Int, data: String): Boolean {
+        if (this.filterBank == null || this.filterData == null) {
+            throw IllegalArgumentException("Filter not set")
+        }
+        val originalPower:Int = this.scanner.power
+        if (this.scanner.power > 5){
+            this.scanner.setPower(5)
+        }
+        val (writePtr, writeCnt) = makePtrAndCnt(writeBank)
+        val (filterPtr, filterCnt) = makePtrAndCnt(filterBank!!)
+        var result = this.scanner.writeData(
+            password,
+            filterBank!!,
+            filterPtr,
+            filterCnt * 16,
+            filterData!!,
+            writeBank,
+            writePtr,
+            writeCnt,
+            data
+        )
+        if (result) {
+            this.scanner.setPower(originalPower)
+            return true
+        } else {
+            result = this.scanner.writeData(
+                defaultPassword,
+                filterBank!!,
+                filterPtr,
+                filterCnt * 16,
+                filterData!!,
+                writeBank,
+                writePtr,
+                writeCnt,
+                data
+            )
+            lockTag()
+            if (result) {
+                this.scanner.setPower(originalPower)
+                return true
+            }else{
+                this.scanner.setPower(originalPower)
+                return false
+            }
+        }
+
+    }
 
 
 }
