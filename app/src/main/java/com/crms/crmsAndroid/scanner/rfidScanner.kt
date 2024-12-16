@@ -230,7 +230,10 @@ class rfidScanner {
     /**
      * Starts the tag reading loop and processes each tag read using the provided lambda function.
      *
-     * @param lifecycleScope The CoroutineScope used for launching the coroutine, typically the lifecycle scope of an Activity or Fragment.
+     * This function initiates the inventory process for reading tags and continuously checks for new tags
+     * in a coroutine. When a tag is detected, it calls the provided lambda function with the tag data.
+     *
+     * @param lifecycleScope The CoroutineScope used to launch the coroutine, typically the lifecycle scope of an Activity or Fragment.
      * @param onTagRead A lambda function that takes a UHFTAGInfo object as a parameter, which is called whenever a tag is read successfully.
      */
     fun readTagLoop(lifecycleScope: CoroutineScope, onTagRead: (tag: UHFTAGInfo) -> Unit) {
@@ -266,6 +269,19 @@ class rfidScanner {
     fun readTagLoopwithFilter(filterBank: Int, filterData: String) {
         this.setFilter(filterBank, filterData)
         this.readTagLoop()
+    }
+
+    /**
+     * Starts the tag reading loop with an applied filter and processes each tag read using the provided lambda function.
+     *
+     * @param filterBank The memory bank to apply the filter to.
+     * @param filterData The data to filter on.
+     * @param lifecycleScope The CoroutineScope used for launching the coroutine, typically the lifecycle scope of an Activity or Fragment.
+     * @param onTagRead A lambda function that takes a UHFTAGInfo object as a parameter, which is called whenever a tag is read successfully.
+     */
+    fun readTagLoopwithFilter(filterBank: Int, filterData: String, lifecycleScope: CoroutineScope, onTagRead: (tag: UHFTAGInfo) -> Unit) {
+        this.setFilter(filterBank, filterData)
+        this.readTagLoop(lifecycleScope, onTagRead)
     }
 
     /**
