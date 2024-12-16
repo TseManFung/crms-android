@@ -4,6 +4,10 @@ import com.rscja.deviceapi.RFIDWithUHFUART
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.IUHF.*
 import java.util.ArrayList
+import com.rscja.deviceapi.entity.UHFTAGInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class rfidScanner {
     lateinit var scanner: RFIDWithUHFUART
@@ -221,6 +225,29 @@ class rfidScanner {
         // only can read EPC / Tid
         this.scanner.startInventoryTag()
         this.loopFlag = true
+    }
+
+    /**
+     * Starts the tag reading loop and processes each tag read using the provided lambda function.
+     *
+     * @param lifecycleScope The CoroutineScope used for launching the coroutine, typically the lifecycle scope of an Activity or Fragment.
+     * @param onTagRead A lambda function that takes a UHFTAGInfo object as a parameter, which is called whenever a tag is read successfully.
+     */
+    fun readTagLoop(lifecycleScope: CoroutineScope, onTagRead: (tag: UHFTAGInfo) -> Unit) {
+        // 开始读取标签
+        this.scanner.startInventoryTag()
+        this.loopFlag = true
+
+        lifecycleScope.launch {
+            while (loopFlag) {
+                val tag = scanner.readTagFromBuffer()
+                if (tag != null) {
+                    onTagRead(tag)
+                } else {
+                    delay(100)
+                }
+            }
+        }
     }
 
     /**

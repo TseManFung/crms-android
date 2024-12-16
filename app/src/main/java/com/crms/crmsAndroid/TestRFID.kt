@@ -23,6 +23,7 @@ class TestRFID : ComponentActivity() {
     private val items = mutableListOf<String>() // 用於存放 ListView 的數據
     private lateinit var listAdapter: ArrayAdapter<String>
     var objRfidScanner: rfidScanner = rfidScanner()
+
     init {
         System.loadLibrary("IGLBarDecoder") // 加載 libIGLBarDecoder.so
         System.loadLibrary("IGLImageAE")    // 加載 libIGLImageAE.so
@@ -98,23 +99,30 @@ class TestRFID : ComponentActivity() {
 //            objRfidScanner.readTagLoop()
 //            readLoopForTest(objRfidScanner, handler1).start()
 
-            objRfidScanner.readTagLoop()
 
-            lifecycleScope.launch {
-                appendTextToList("Start reading RFID tags...")
+            // read loop using coroutine without lambda
+//            objRfidScanner.readTagLoop()
+//            lifecycleScope.launch {
+//                appendTextToList("Start reading RFID tags...")
+//                while (objRfidScanner.loopFlag) {
+//                    val tag = objRfidScanner.scanner.readTagFromBuffer()
+//                    if (tag != null) {
+//                        val message = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+//                        appendTextToList(message)
+//                    } else {
+//                        // 如果没有标签，稍作等待
+//                        delay(100)
+//                    }
+//                }
+//            }
 
-                while (objRfidScanner.loopFlag) {
-                    val tag = objRfidScanner.scanner.readTagFromBuffer()
-                    if (tag != null) {
-                        val message = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
-                        appendTextToList(message)
-                    } else {
-                        // 如果没有标签，稍作等待
-                        delay(100)
-                    }
-                }
+
+            // read loop using coroutine with lambda
+            objRfidScanner.readTagLoop(lifecycleScope) { tag ->
+                val message =
+                    """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+                appendTextToList(message)
             }
-
         } catch (e: Exception) {
             rfidData = e.message.toString() // 捕獲異常
         } finally {
