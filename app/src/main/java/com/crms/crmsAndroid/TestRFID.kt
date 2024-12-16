@@ -118,11 +118,14 @@ class TestRFID : ComponentActivity() {
 
 
             // read loop using coroutine with lambda
+            // only need to write the code for handling the tag
             objRfidScanner.readTagLoop(lifecycleScope) { tag ->
                 val message =
                     """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
                 appendTextToList(message)
             }
+
+
         } catch (e: Exception) {
             rfidData = e.message.toString() // 捕獲異常
         } finally {
