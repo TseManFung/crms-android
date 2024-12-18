@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Crms Android</string>
+    <string name="app_name">CAMS</string>
     <string name="title_activity_test_rfid">testRFID</string>
     <string name="title_activity_main2">MainActivity2</string>
 </resources>
