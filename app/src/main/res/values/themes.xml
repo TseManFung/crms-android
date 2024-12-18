@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.CrmsAndroid" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- 使用 AppCompat 的主題 -->
+    <style name="Theme.CrmsAndroid" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- 可以在這裡添加自定義屬性 -->
+    </style>
+
+    <style name="Theme.CrmsAndroid.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.CrmsAndroid.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.CrmsAndroid.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>
