@@ -20,5 +20,9 @@
             android:id="@+id/nav_login"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="login" />
+        <item
+            android:id="@+id/searchItem"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Search Item" />
     </group>
 </menu>

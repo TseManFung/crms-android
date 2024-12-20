@@ -7,4 +7,18 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Keqing Theme -->
+    <color name="keqing_primary">#A96FF0</color>
+    <color name="keqing_light">#D2B8F3</color>
+    <color name="keqing_dark">#6D47A1</color>
+    <color name="keqing_silver">#D8D8D8</color>
+    <color name="keqing_black">#333333</color>
+
+    <!-- Ganyu Theme -->
+    <color name="ganyu_primary">#85C1E9</color>
+    <color name="ganyu_light">#AEDFF7</color>
+    <color name="ganyu_dark">#2E86C1</color>
+    <color name="ganyu_white">#FFFFFF</color>
+    <color name="ganyu_silver">#BCC6CC</color>
 </resources>

@@ -28,4 +28,10 @@
         android:name="com.crms.crmsAndroid.ui.login.LoginFragment"
         android:label="login"
         tools:layout="@layout/fragment_login" />
+    <fragment
+        android:id="@+id/searchItem"
+        android:name="com.crms.crmsAndroid.ui.search.SearchFragment"
+        android:label="Search Item"
+        tools:layout="@layout/fragment_search"
+        />
 </navigation>
