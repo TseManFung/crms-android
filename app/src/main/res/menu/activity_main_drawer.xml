@@ -4,25 +4,38 @@
     tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
+
         <item
-            android:id="@+id/nav_home"
+            android:id="@+id/nav_inventory"
             android:icon="@drawable/ic_menu_camera"
-            android:title="@string/menu_home" />
+            android:title="Inventory" />
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="@string/menu_gallery" />
-        <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="@string/menu_slideshow" />
-        <item
-            android:id="@+id/nav_login"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="login" />
+            android:id="@+id/nav_manInventory"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="Manual inventory" />
         <item
             android:id="@+id/searchItem"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="Search Item" />
+        <item
+            android:id="@+id/nav_gallery"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="Update room item" />
+        <item
+            android:id="@+id/nav_updateLoc"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Update item location" />
+
+        <item
+            android:id="@+id/nav_addItem"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Add item" />
+
+        <item
+            android:id="@+id/nav_deleteItem"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Delete item" />
+
+
     </group>
 </menu>
