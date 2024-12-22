@@ -34,4 +34,13 @@
         android:label="Search Item"
         tools:layout="@layout/fragment_search"
         />
+
+
+    <fragment
+        android:id="@+id/nav_testRfid"
+        android:name="com.crms.crmsAndroid.TestRfidFragment"
+        android:label="Test RFID"
+        tools:layout="@layout/fragment_test_rfid"
+        />
+
 </navigation>

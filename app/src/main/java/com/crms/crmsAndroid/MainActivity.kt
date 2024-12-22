@@ -1,6 +1,7 @@
 package com.crms.crmsAndroid
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.navigation.NavigationView
@@ -12,11 +13,26 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.crms.crmsAndroid.databinding.ActivityMainBinding
+import com.crms.crmsAndroid.scanner.rfidScanner
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private lateinit var objRfidScanner: rfidScanner
+        private set;
+
+    init {
+        System.loadLibrary("IGLBarDecoder")
+        System.loadLibrary("IGLImageAE")
+        try {
+            objRfidScanner = rfidScanner()
+        } catch (
+            e: Exception
+        ) {
+            Log.e("E", "can not init objRfidScanner", e)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +54,12 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_manInventory, R.id.nav_gallery, R.id.nav_slideshow,R.id.nav_login,R.id.searchItem
+                R.id.nav_manInventory,
+                R.id.nav_gallery,
+                R.id.nav_slideshow,
+                R.id.nav_login,
+                R.id.searchItem,
+                R.id.nav_testRfid
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -54,6 +75,11 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    override fun onDestroy() {
+        objRfidScanner.free()
+        super.onDestroy()
     }
 
     // 9 DO BY DANTEH

@@ -36,6 +36,10 @@
             android:icon="@drawable/ic_menu_slideshow"
             android:title="Delete item" />
 
+        <item
+            android:id="@+id/nav_testRfid"
+            android:title="Test RFID" />
+
 
     </group>
 </menu>

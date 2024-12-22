@@ -123,6 +123,8 @@ class TestRFID : ComponentActivity() {
                 val message =
                     """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
                 appendTextToList(message)
+                // TODO: API, get ___, post ___.
+                // TODO: API, get 借出資料, post roomRfid.
             }
 
 
