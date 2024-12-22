@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-    private lateinit var objRfidScanner: rfidScanner
+    lateinit var objRfidScanner: rfidScanner
         private set;
 
     init {
