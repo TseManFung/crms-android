@@ -1,9 +1,6 @@
 package com.crms.crmsAndroid
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Message
-import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
@@ -11,9 +8,6 @@ import android.widget.Spinner
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.scanner.rfidScanner
-import com.rscja.deviceapi.entity.UHFTAGInfo
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class TestRFID : ComponentActivity() {
     private lateinit var lvMain: ListView

@@ -2,18 +2,21 @@ package com.crms.crmsAndroid
 
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.Menu
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.navigation.NavigationView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
 import com.crms.crmsAndroid.databinding.ActivityMainBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
+import com.crms.crmsAndroid.ui.TriggerDownFragment
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,7 +24,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     lateinit var objRfidScanner: rfidScanner
         private set;
-
+    lateinit var navController:NavController
+        private set
     init {
         System.loadLibrary("IGLBarDecoder")
         System.loadLibrary("IGLImageAE")
@@ -40,6 +44,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        navController = findNavController(R.id.nav_host_fragment_content_main)
+
         setSupportActionBar(binding.appBarMain.toolbar)
 
         binding.appBarMain.fab.setOnClickListener { view ->
@@ -49,7 +55,6 @@ class MainActivity : AppCompatActivity() {
         }
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
@@ -73,13 +78,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
     override fun onDestroy() {
         objRfidScanner.free()
         super.onDestroy()
+    }
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        // 139 280 293
+        if (keyCode == 280) {
+            if (event.repeatCount == 0) {
+                val currentFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
+                    ?.childFragmentManager
+                    ?.fragments
+                    ?.firstOrNull { it.isVisible } // Get the visible fragment
+
+                if (currentFragment is TriggerDownFragment) {
+                    currentFragment.onTriggerDown()
+                }
+            }
+            return true
+        }
+
+        return super.onKeyDown(keyCode, event)
     }
 
     // 9 DO BY DANTEH

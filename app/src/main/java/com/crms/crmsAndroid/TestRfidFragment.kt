@@ -5,14 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.databinding.FragmentTestRfidBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
+import com.crms.crmsAndroid.ui.TriggerDownFragment
+import com.rscja.deviceapi.interfaces.IUHF.Bank_TID
 
-class TestRfidFragment : Fragment() {
+class TestRfidFragment : TriggerDownFragment() {
 
     private var _binding: FragmentTestRfidBinding? = null
     private val binding get() = _binding!!
@@ -20,7 +20,11 @@ class TestRfidFragment : Fragment() {
     private lateinit var listAdapter: ArrayAdapter<String>
     private val items = mutableListOf<String>()
     private lateinit var mainActivity: MainActivity
-    private lateinit var rfidScanner:rfidScanner
+    private lateinit var objRfidScanner:rfidScanner
+    override fun onTriggerDown() {
+        val TID = objRfidScanner.readTag(Bank_TID)
+        appendTextToList("call by trigger\nTID: ${TID}")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,7 +42,7 @@ class TestRfidFragment : Fragment() {
 
     private fun setupUI() {
         mainActivity = requireActivity() as MainActivity
-        rfidScanner = mainActivity.objRfidScanner
+        objRfidScanner = mainActivity.objRfidScanner
 
         // Initialize ListView
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
@@ -46,10 +50,10 @@ class TestRfidFragment : Fragment() {
 
         // Set up buttons
         binding.btnScan.setOnClickListener {
-            handleBtnScanClick(rfidScanner)
+            handleBtnScanClick(objRfidScanner)
         }
         binding.btnStop.setOnClickListener {
-            rfidScanner.stopReadTagLoop()
+            objRfidScanner.stopReadTagLoop()
         }
 
         // Set up Spinner
@@ -62,7 +66,7 @@ class TestRfidFragment : Fragment() {
             binding.spnBank.adapter = adapter
         }
 
-        appendTextToList("RFID 版本: ${rfidScanner.getVersion()}")
+        appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
     }
 
     private fun setupObservers() {
@@ -91,7 +95,7 @@ class TestRfidFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        rfidScanner.stopReadTagLoop()
+        objRfidScanner.stopReadTagLoop()
     }
 
     override fun onDestroyView() {
