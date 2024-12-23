@@ -25,16 +25,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     lateinit var objRfidScanner: rfidScanner
         private set;
-    lateinit var navController:NavController
+    lateinit var navController: NavController
         private set
+
     init {
         System.loadLibrary("IGLBarDecoder")
         System.loadLibrary("IGLImageAE")
         try {
             objRfidScanner = rfidScanner()
-        } catch (
-            e: Exception
-        ) {
+        } catch (e: Exception) {
             Log.e("E", "can not init objRfidScanner", e)
         }
     }
@@ -86,12 +85,14 @@ class MainActivity : AppCompatActivity() {
         objRfidScanner.free()
         super.onDestroy()
     }
+
     fun getCurrentFragment(): Fragment? {
         return supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
-                    ?.childFragmentManager
-                    ?.fragments
-                    ?.firstOrNull { it.isVisible } // Get the visible fragment
+            ?.childFragmentManager
+            ?.fragments
+            ?.firstOrNull { it.isVisible } // Get the visible fragment
     }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         // 139 280 293
         if (keyCode == 280) {
