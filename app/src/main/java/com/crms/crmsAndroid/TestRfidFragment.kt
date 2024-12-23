@@ -95,7 +95,9 @@ class TestRfidFragment : TriggerDownFragment() {
 
     override fun onPause() {
         super.onPause()
-        objRfidScanner.stopReadTagLoop()
+        if(objRfidScanner.loopFlag){
+            objRfidScanner.stopReadTagLoop()
+        }
     }
 
     override fun onDestroyView() {
