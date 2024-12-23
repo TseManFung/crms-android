@@ -6,6 +6,7 @@ import android.view.KeyEvent
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -85,16 +86,18 @@ class MainActivity : AppCompatActivity() {
         objRfidScanner.free()
         super.onDestroy()
     }
+    fun getCurrentFragment(): Fragment? {
+        return supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
+                    ?.childFragmentManager
+                    ?.fragments
+                    ?.firstOrNull { it.isVisible } // Get the visible fragment
+    }
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         // 139 280 293
         if (keyCode == 280) {
             if (event.repeatCount == 0) {
-                val currentFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
-                    ?.childFragmentManager
-                    ?.fragments
-                    ?.firstOrNull { it.isVisible } // Get the visible fragment
-
-                if (currentFragment is TriggerDownFragment) {
+                val currentFragment = getCurrentFragment()
+                if (currentFragment != null && currentFragment is TriggerDownFragment) {
                     currentFragment.onTriggerDown()
                 }
             }

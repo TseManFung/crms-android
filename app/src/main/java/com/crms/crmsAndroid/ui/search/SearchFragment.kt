@@ -77,4 +77,6 @@ class SearchFragment : Fragment() {
         // Clear binding reference
         _binding = null
     }
+
+
 }
