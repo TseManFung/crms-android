@@ -61,9 +61,13 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_manInventory,
-                R.id.nav_gallery,
-                R.id.nav_slideshow,
                 R.id.nav_login,
+                R.id.nav_inventory,
+                R.id.nav_updateItem,
+                R.id.nav_addItem,
+                R.id.nav_deleteItem,
+                R.id.nav_updateLoc,
+                R.id.nav_newRoom,
                 R.id.searchItem,
                 R.id.nav_testRfid
             ), drawerLayout
