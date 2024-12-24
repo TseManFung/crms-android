@@ -16,6 +16,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.crms.crmsAndroid.databinding.ActivityMainBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
+import com.crms.crmsAndroid.ui.ITriggerLongPress
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         private set;
     lateinit var navController: NavController
         private set
+    private var isLongPress = false
 
     init {
         System.loadLibrary("IGLBarDecoder")
@@ -100,16 +102,35 @@ class MainActivity : AppCompatActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         // 139 280 293
         if (keyCode == 280) {
-            if (event.repeatCount == 0) {
+            if (event.repeatCount == 1) {
+                isLongPress = true
+            }else if (event.repeatCount > 1) {
                 val currentFragment = getCurrentFragment()
-                if (currentFragment != null && currentFragment is ITriggerDown) {
-                    currentFragment.onTriggerDown()
+                if (currentFragment != null && currentFragment is ITriggerLongPress && isLongPress) {
+                    currentFragment.onTriggerLongPress()
                 }
             }
             return true
         }
 
         return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == 280) {
+            val currentFragment = getCurrentFragment()
+            if (currentFragment != null) {
+                if (currentFragment is ITriggerLongPress && isLongPress) {
+                    currentFragment.onTriggerRelease()
+                } else if (currentFragment is ITriggerDown && !isLongPress) {
+                    currentFragment.onTriggerDown()
+                }
+            }
+            isLongPress = false
+            return true
+        }
+
+        return super.onKeyUp(keyCode, event)
     }
 
     // 9 DO BY DANTEH

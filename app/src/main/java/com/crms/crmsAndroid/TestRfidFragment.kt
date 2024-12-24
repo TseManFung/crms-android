@@ -11,9 +11,10 @@ import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.databinding.FragmentTestRfidBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
+import com.crms.crmsAndroid.ui.ITriggerLongPress
 import com.rscja.deviceapi.interfaces.IUHF.Bank_TID
 
-class TestRfidFragment : Fragment(), ITriggerDown {
+class TestRfidFragment : Fragment(), ITriggerDown,ITriggerLongPress {
 
     private var _binding: FragmentTestRfidBinding? = null
     private val binding get() = _binding!!
@@ -105,5 +106,13 @@ class TestRfidFragment : Fragment(), ITriggerDown {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onTriggerLongPress() {
+        appendTextToList("call by long press")
+    }
+
+    override fun onTriggerRelease() {
+        appendTextToList("call by trigger release")
     }
 }
