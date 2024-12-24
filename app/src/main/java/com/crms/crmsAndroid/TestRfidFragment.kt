@@ -14,7 +14,7 @@ import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
 import com.rscja.deviceapi.interfaces.IUHF.Bank_TID
 
-class TestRfidFragment : Fragment(), ITriggerDown,ITriggerLongPress {
+class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private var _binding: FragmentTestRfidBinding? = null
     private val binding get() = _binding!!
@@ -98,9 +98,7 @@ class TestRfidFragment : Fragment(), ITriggerDown,ITriggerLongPress {
 
     override fun onPause() {
         super.onPause()
-        if (objRfidScanner.loopFlag) {
-            objRfidScanner.stopReadTagLoop()
-        }
+        objRfidScanner.stopReadTagLoop()
     }
 
     override fun onDestroyView() {
