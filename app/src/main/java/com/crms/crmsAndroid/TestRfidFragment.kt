@@ -5,14 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.databinding.FragmentTestRfidBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
-import com.crms.crmsAndroid.ui.TriggerDownFragment
+import com.crms.crmsAndroid.ui.ITriggerDown
 import com.rscja.deviceapi.interfaces.IUHF.Bank_TID
 
-class TestRfidFragment : TriggerDownFragment() {
+class TestRfidFragment : Fragment(), ITriggerDown {
 
     private var _binding: FragmentTestRfidBinding? = null
     private val binding get() = _binding!!
@@ -20,7 +21,7 @@ class TestRfidFragment : TriggerDownFragment() {
     private lateinit var listAdapter: ArrayAdapter<String>
     private val items = mutableListOf<String>()
     private lateinit var mainActivity: MainActivity
-    private lateinit var objRfidScanner:rfidScanner
+    private lateinit var objRfidScanner: rfidScanner
     override fun onTriggerDown() {
         val TID = objRfidScanner.readTag(Bank_TID)
         appendTextToList("call by trigger\nTID: ${TID}")
@@ -80,7 +81,8 @@ class TestRfidFragment : TriggerDownFragment() {
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
         try {
             rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
-                val message = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+                val message =
+                    """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
                 viewModel.addItem(message)
             }
         } catch (e: Exception) {
@@ -95,7 +97,7 @@ class TestRfidFragment : TriggerDownFragment() {
 
     override fun onPause() {
         super.onPause()
-        if(objRfidScanner.loopFlag){
+        if (objRfidScanner.loopFlag) {
             objRfidScanner.stopReadTagLoop()
         }
     }

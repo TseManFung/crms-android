@@ -15,7 +15,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.crms.crmsAndroid.databinding.ActivityMainBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
-import com.crms.crmsAndroid.ui.TriggerDownFragment
+import com.crms.crmsAndroid.ui.ITriggerDown
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
         if (keyCode == 280) {
             if (event.repeatCount == 0) {
                 val currentFragment = getCurrentFragment()
-                if (currentFragment != null && currentFragment is TriggerDownFragment) {
+                if (currentFragment != null && currentFragment is ITriggerDown) {
                     currentFragment.onTriggerDown()
                 }
             }
