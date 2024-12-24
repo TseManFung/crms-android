@@ -225,7 +225,10 @@ class rfidScanner {
      * Starts the tag reading loop.
      */
     fun readTagLoop() {
-        // only can read EPC / Tid
+        // only can read EPC / Tid / User
+        if (loopFlag){
+            throw RuntimeException("Loop already started")
+        }
         this.scanner.startInventoryTag()
         this.loopFlag = true
     }
@@ -241,8 +244,7 @@ class rfidScanner {
      */
     fun readTagLoop(lifecycleScope: CoroutineScope, onTagRead: (tag: UHFTAGInfo) -> Unit) {
         // 开始读取标签
-        this.scanner.startInventoryTag()
-        this.loopFlag = true
+        readTagLoop()
 
         lifecycleScope.launch {
             while (loopFlag) {
@@ -272,7 +274,7 @@ class rfidScanner {
      * @param filterBank the memory bank to filter on.
      * @param filterData the data to filter.
      */
-    fun readTagLoopwithFilter(filterBank: Int, filterData: String) {
+    fun readTagLoopWithFilter(filterBank: Int, filterData: String) {
         this.setFilter(filterBank, filterData)
         this.readTagLoop()
     }
@@ -285,7 +287,7 @@ class rfidScanner {
      * @param lifecycleScope The CoroutineScope used for launching the coroutine, typically the lifecycle scope of an Activity or Fragment.
      * @param onTagRead A lambda function that takes a UHFTAGInfo object as a parameter, which is called whenever a tag is read successfully.
      */
-    fun readTagLoopwithFilter(
+    fun readTagLoopWithFilter(
         filterBank: Int,
         filterData: String,
         lifecycleScope: CoroutineScope,
@@ -349,7 +351,7 @@ class rfidScanner {
      * @return true if the write operation was successful, false otherwise.
      * @throws IllegalArgumentException if the filter bank value is invalid.
      */
-    fun writeTagWithFiliter(
+    fun writeTagWithFilter(
         writeBank: Int,
         data: String,
         filterBank: Int,
@@ -359,7 +361,7 @@ class rfidScanner {
             throw IllegalArgumentException("Invalid filter bank value, filter bank cannot be Reserved Bank")
         }
         this.setFilter(filterBank, filterData)
-        return this.writeTagWithFiliter(writeBank, data)
+        return this.writeTagWithFilter(writeBank, data)
     }
 
     /**
@@ -369,7 +371,7 @@ class rfidScanner {
      * @return true if the write operation was successful, false otherwise.
      * @throws IllegalArgumentException if the filter is not set.
      */
-    fun writeTagWithFiliter(writeBank: Int, data: String): Boolean {
+    fun writeTagWithFilter(writeBank: Int, data: String): Boolean {
         if (this.filterBank == null || this.filterData == null) {
             throw IllegalArgumentException("Filter not set")
         }

@@ -102,13 +102,13 @@ class MainActivity : AppCompatActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         // 139 280 293
         if (keyCode == 280) {
-            if (event.repeatCount >= 1) {
-                val currentFragment = getCurrentFragment()
-                if (currentFragment != null && currentFragment is ITriggerLongPress && isLongPress) {
-                    currentFragment.onTriggerLongPress()
-                }
+            val currentFragment = getCurrentFragment()
+            if (currentFragment != null && currentFragment is ITriggerLongPress && event.repeatCount >= 1) {
                 if (event.repeatCount == 1) {
                     isLongPress = true
+                }
+                if (isLongPress) {
+                    currentFragment.onTriggerLongPress()
                 }
             }
 

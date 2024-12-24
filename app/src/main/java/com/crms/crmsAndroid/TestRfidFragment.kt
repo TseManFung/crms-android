@@ -24,8 +24,7 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
     override fun onTriggerDown() {
-        val TID = objRfidScanner.readTag(Bank_TID)
-        appendTextToList("call by trigger\nTID: ${TID}")
+        appendTextToList("call by trigger down")
     }
 
     override fun onCreateView(
