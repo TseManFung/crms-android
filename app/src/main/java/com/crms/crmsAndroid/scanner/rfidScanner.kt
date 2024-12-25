@@ -16,7 +16,7 @@ class rfidScanner {
     private val defaultPassword = "00000000"
     private var filterBank: Int? = null
     private var filterData: String? = null
-    private val lockCode:String;
+    private val lockCode: String;
     var loopFlag = false
 
     init {
@@ -26,8 +26,9 @@ class rfidScanner {
             throw Exception("Failed to initialize RFID scanner");
         }
         setMode()
-        val lockBank:ArrayList<Int> = arrayListOf(LockBank_EPC,LockBank_TID,LockBank_USER,LockBank_ACCESS,LockBank_KILL)
-        lockCode = this.scanner.generateLockCode(lockBank,LockMode_LOCK)
+        val lockBank: ArrayList<Int> =
+            arrayListOf(LockBank_EPC, LockBank_TID, LockBank_USER, LockBank_ACCESS, LockBank_KILL)
+        lockCode = this.scanner.generateLockCode(lockBank, LockMode_LOCK)
     }
 
     /**
@@ -176,6 +177,7 @@ class rfidScanner {
         this.setFilter(filterBank, filterData)
         return this.readTagWithFilter(readBank)
     }
+
     /**
      * Reads a tag with the current applied filter.
      * @param readBank the memory bank to read from.
@@ -218,11 +220,15 @@ class rfidScanner {
             }
         }
     }
+
     /**
      * Starts the tag reading loop.
      */
     fun readTagLoop() {
-        // only can read EPC / Tid
+        // only can read EPC / Tid / User
+        if (loopFlag){
+            throw RuntimeException("Loop already started")
+        }
         this.scanner.startInventoryTag()
         this.loopFlag = true
     }
@@ -238,8 +244,7 @@ class rfidScanner {
      */
     fun readTagLoop(lifecycleScope: CoroutineScope, onTagRead: (tag: UHFTAGInfo) -> Unit) {
         // 开始读取标签
-        this.scanner.startInventoryTag()
-        this.loopFlag = true
+        readTagLoop()
 
         lifecycleScope.launch {
             while (loopFlag) {
@@ -257,8 +262,11 @@ class rfidScanner {
      * Stops the tag reading loop.
      */
     fun stopReadTagLoop() {
-        this.loopFlag = false
-        this.scanner.stopInventory()
+        if (this.loopFlag) {
+            this.loopFlag = false
+            this.scanner.stopInventory()
+        }
+
     }
 
     /**
@@ -266,7 +274,7 @@ class rfidScanner {
      * @param filterBank the memory bank to filter on.
      * @param filterData the data to filter.
      */
-    fun readTagLoopwithFilter(filterBank: Int, filterData: String) {
+    fun readTagLoopWithFilter(filterBank: Int, filterData: String) {
         this.setFilter(filterBank, filterData)
         this.readTagLoop()
     }
@@ -279,7 +287,12 @@ class rfidScanner {
      * @param lifecycleScope The CoroutineScope used for launching the coroutine, typically the lifecycle scope of an Activity or Fragment.
      * @param onTagRead A lambda function that takes a UHFTAGInfo object as a parameter, which is called whenever a tag is read successfully.
      */
-    fun readTagLoopwithFilter(filterBank: Int, filterData: String, lifecycleScope: CoroutineScope, onTagRead: (tag: UHFTAGInfo) -> Unit) {
+    fun readTagLoopWithFilter(
+        filterBank: Int,
+        filterData: String,
+        lifecycleScope: CoroutineScope,
+        onTagRead: (tag: UHFTAGInfo) -> Unit
+    ) {
         this.setFilter(filterBank, filterData)
         this.readTagLoop(lifecycleScope, onTagRead)
     }
@@ -295,6 +308,7 @@ class rfidScanner {
         }
         this.scanner.setPower(power)
     }
+
     private fun lockTag(): Boolean {
         return this.scanner.lockMem(this.password, this.lockCode)
     }
@@ -306,8 +320,8 @@ class rfidScanner {
      * @return true if the write operation was successful, false otherwise.
      */
     fun writeTag(writeBank: Int, data: String): Boolean {
-        val originalPower:Int = this.scanner.power
-        if (this.scanner.power > 5){
+        val originalPower: Int = this.scanner.power
+        if (this.scanner.power > 5) {
             this.scanner.setPower(5)
         }
         val (ptr, cnt) = makePtrAndCnt(writeBank)
@@ -321,7 +335,7 @@ class rfidScanner {
             if (result) {
                 this.scanner.setPower(originalPower)
                 return true
-            }else{
+            } else {
                 this.scanner.setPower(originalPower)
                 return false
             }
@@ -337,12 +351,17 @@ class rfidScanner {
      * @return true if the write operation was successful, false otherwise.
      * @throws IllegalArgumentException if the filter bank value is invalid.
      */
-    fun writeTagWithFiliter(writeBank: Int, data: String, filterBank: Int, filterData: String): Boolean {
+    fun writeTagWithFilter(
+        writeBank: Int,
+        data: String,
+        filterBank: Int,
+        filterData: String
+    ): Boolean {
         if (filterBank == 0) {
             throw IllegalArgumentException("Invalid filter bank value, filter bank cannot be Reserved Bank")
         }
         this.setFilter(filterBank, filterData)
-        return this.writeTagWithFiliter(writeBank, data)
+        return this.writeTagWithFilter(writeBank, data)
     }
 
     /**
@@ -352,12 +371,12 @@ class rfidScanner {
      * @return true if the write operation was successful, false otherwise.
      * @throws IllegalArgumentException if the filter is not set.
      */
-    fun writeTagWithFiliter(writeBank: Int, data: String): Boolean {
+    fun writeTagWithFilter(writeBank: Int, data: String): Boolean {
         if (this.filterBank == null || this.filterData == null) {
             throw IllegalArgumentException("Filter not set")
         }
-        val originalPower:Int = this.scanner.power
-        if (this.scanner.power > 5){
+        val originalPower: Int = this.scanner.power
+        if (this.scanner.power > 5) {
             this.scanner.setPower(5)
         }
         val (writePtr, writeCnt) = makePtrAndCnt(writeBank)
@@ -392,7 +411,7 @@ class rfidScanner {
             if (result) {
                 this.scanner.setPower(originalPower)
                 return true
-            }else{
+            } else {
                 this.scanner.setPower(originalPower)
                 return false
             }

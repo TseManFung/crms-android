@@ -1,4 +1,4 @@
-package com.crms.crmsAndroid
+package com.crms.crmsAndroid.ui.updateLoc
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,32 +8,33 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.crms.crmsAndroid.databinding.FragmentTestRfidBinding
+import com.crms.crmsAndroid.MainActivity
+import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
-import com.rscja.deviceapi.interfaces.IUHF.Bank_TID
+import com.crms.crmsAndroid.databinding.FragmentUpdateLocBinding
 
-class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
+class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
-    private var _binding: FragmentTestRfidBinding? = null
+    private var _binding: FragmentUpdateLocBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewModel: TestRfidViewModel
+    private lateinit var viewModel: UpdateLocViewModel
     private lateinit var listAdapter: ArrayAdapter<String>
     private val items = mutableListOf<String>()
+    private val scannedTags = mutableSetOf<String>()
+    private val tagInfoMap = mutableMapOf<String, String>()
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
-    override fun onTriggerDown() {
-        appendTextToList("call by trigger down")
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentTestRfidBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(this).get(TestRfidViewModel::class.java)
+        _binding = FragmentUpdateLocBinding.inflate(inflater, container, false)
+        viewModel = ViewModelProvider(this).get(UpdateLocViewModel::class.java)
 
         setupUI()
         setupObservers()
@@ -57,14 +58,24 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             objRfidScanner.stopReadTagLoop()
         }
 
-        // Set up Spinner
+        // Set up Campus Spinner
         ArrayAdapter.createFromResource(
             requireContext(),
-            R.array.bank_array,
+            R.array.campus_array,
             android.R.layout.simple_spinner_item
         ).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            binding.spnBank.adapter = adapter
+            binding.campusSpinner.adapter = adapter
+        }
+
+        // Set up Room Spinner
+        ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.cw_room_array,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.roomSpinner.adapter = adapter
         }
 
         appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
@@ -81,9 +92,18 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
         try {
             rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
+                val currentTid = tag.tid
                 val message =
                     """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
-                viewModel.addItem(message)
+
+                if (!scannedTags.contains(currentTid)) {
+                    scannedTags.add(currentTid)
+                    tagInfoMap[currentTid] = message
+                    viewModel.addItem(message)
+                } else {
+
+                    viewModel.updateItem(currentTid, message)
+                }
             }
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
@@ -98,6 +118,13 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     override fun onPause() {
         super.onPause()
         objRfidScanner.stopReadTagLoop()
+        scannedTags.clear()
+        tagInfoMap.clear()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.clearItems()
     }
 
     override fun onDestroyView() {
@@ -106,10 +133,16 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     override fun onTriggerLongPress() {
-        appendTextToList("call by long press")
+        if (!objRfidScanner.loopFlag) {
+            handleBtnScanClick(objRfidScanner)
+        }
     }
 
     override fun onTriggerRelease() {
-        appendTextToList("call by trigger release")
+        objRfidScanner.stopReadTagLoop()
+    }
+
+    override fun onTriggerDown() {
+        handleBtnScanClick(objRfidScanner)
     }
 }

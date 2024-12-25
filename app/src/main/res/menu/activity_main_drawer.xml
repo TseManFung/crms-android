@@ -18,7 +18,7 @@
             android:icon="@drawable/ic_menu_slideshow"
             android:title="Search Item" />
         <item
-            android:id="@+id/nav_gallery"
+            android:id="@+id/nav_updateItem"
             android:icon="@drawable/ic_menu_gallery"
             android:title="Update room item" />
         <item
@@ -35,6 +35,11 @@
             android:id="@+id/nav_deleteItem"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="Delete item" />
+
+        <item
+            android:id="@+id/nav_newRoom"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="New Room" />
 
         <item
             android:id="@+id/nav_testRfid"

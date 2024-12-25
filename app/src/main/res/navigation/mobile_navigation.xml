@@ -9,19 +9,44 @@
         android:id="@+id/nav_manInventory"
         android:name="com.crms.crmsAndroid.ui.manInventory.ManInventoryFragment"
         android:label="Manual Inventory"
-        tools:layout="@layout/fragment_maninventory" />
+        tools:layout="@layout/fragment_man_inventory" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.crms.crmsAndroid.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        android:id="@+id/nav_inventory"
+        android:name="com.crms.crmsAndroid.ui.inventory.InventoryFragment"
+        android:label="Inventory"
+        tools:layout="@layout/fragment_inventory" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.crms.crmsAndroid.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/nav_newRoom"
+        android:name="com.crms.crmsAndroid.ui.newRoom.NewRoomFragment"
+        android:label="New Room"
+        tools:layout="@layout/fragment_new_room" />
+
+    <fragment
+        android:id="@+id/nav_updateLoc"
+        android:name="com.crms.crmsAndroid.ui.updateLoc.UpdateLocFragment"
+        android:label="Update Loc"
+        tools:layout="@layout/fragment_update_loc" />
+
+    <fragment
+        android:id="@+id/nav_updateItem"
+        android:name="com.crms.crmsAndroid.ui.updateItem.UpdateItemFragment"
+        android:label="Update Item"
+        tools:layout="@layout/fragment_update_item" />
+
+    <fragment
+        android:id="@+id/nav_addItem"
+        android:name="com.crms.crmsAndroid.ui.addItem.AddItemFragment"
+        android:label="Add Item"
+        tools:layout="@layout/fragment_add_item" />
+
+    <fragment
+        android:id="@+id/nav_deleteItem"
+        android:name="com.crms.crmsAndroid.ui.deleteItem.DeleteItemFragment"
+        android:label="Delete Item"
+        tools:layout="@layout/fragment_delete_item" />
+
 
     <fragment
         android:id="@+id/nav_login"

@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class manInventoryViewModel : ViewModel() {
+class ManInventoryViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
         value = "This is manInventoryman Fragment"

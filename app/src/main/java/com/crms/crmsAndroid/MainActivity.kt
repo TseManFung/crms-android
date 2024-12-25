@@ -15,7 +15,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.crms.crmsAndroid.databinding.ActivityMainBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
-import com.crms.crmsAndroid.ui.TriggerDownFragment
+import com.crms.crmsAndroid.ui.ITriggerDown
+import com.crms.crmsAndroid.ui.ITriggerLongPress
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 
@@ -25,16 +26,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     lateinit var objRfidScanner: rfidScanner
         private set;
-    lateinit var navController:NavController
+    lateinit var navController: NavController
         private set
+    private var isLongPress = false
+
     init {
         System.loadLibrary("IGLBarDecoder")
         System.loadLibrary("IGLImageAE")
         try {
             objRfidScanner = rfidScanner()
-        } catch (
-            e: Exception
-        ) {
+        } catch (e: Exception) {
             Log.e("E", "can not init objRfidScanner", e)
         }
     }
@@ -61,9 +62,13 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_manInventory,
-                R.id.nav_gallery,
-                R.id.nav_slideshow,
                 R.id.nav_login,
+                R.id.nav_inventory,
+                R.id.nav_updateItem,
+                R.id.nav_addItem,
+                R.id.nav_deleteItem,
+                R.id.nav_updateLoc,
+                R.id.nav_newRoom,
                 R.id.searchItem,
                 R.id.nav_testRfid
             ), drawerLayout
@@ -86,25 +91,48 @@ class MainActivity : AppCompatActivity() {
         objRfidScanner.free()
         super.onDestroy()
     }
+
     fun getCurrentFragment(): Fragment? {
         return supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
-                    ?.childFragmentManager
-                    ?.fragments
-                    ?.firstOrNull { it.isVisible } // Get the visible fragment
+            ?.childFragmentManager
+            ?.fragments
+            ?.firstOrNull { it.isVisible } // Get the visible fragment
     }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         // 139 280 293
         if (keyCode == 280) {
-            if (event.repeatCount == 0) {
-                val currentFragment = getCurrentFragment()
-                if (currentFragment != null && currentFragment is TriggerDownFragment) {
-                    currentFragment.onTriggerDown()
+            val currentFragment = getCurrentFragment()
+            if (currentFragment != null && currentFragment is ITriggerLongPress && event.repeatCount >= 1) {
+                if (event.repeatCount == 1) {
+                    isLongPress = true
+                }
+                if (isLongPress) {
+                    currentFragment.onTriggerLongPress()
                 }
             }
+
             return true
         }
 
         return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == 280) {
+            val currentFragment = getCurrentFragment()
+            if (currentFragment != null) {
+                if (currentFragment is ITriggerLongPress && isLongPress) {
+                    currentFragment.onTriggerRelease()
+                } else if (currentFragment is ITriggerDown && !isLongPress) {
+                    currentFragment.onTriggerDown()
+                }
+            }
+            isLongPress = false
+            return true
+        }
+
+        return super.onKeyUp(keyCode, event)
     }
 
     // 9 DO BY DANTEH

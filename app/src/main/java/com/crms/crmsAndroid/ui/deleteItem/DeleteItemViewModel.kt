@@ -1,13 +1,13 @@
-package com.crms.crmsAndroid.ui.slideshow
+package com.crms.crmsAndroid.ui.deleteItem
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class SlideshowViewModel : ViewModel() {
+class DeleteItemViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
-        value = "This is slideshow Fragment"
+        value = "This is delete item Fragment"
     }
     val text: LiveData<String> = _text
 }
