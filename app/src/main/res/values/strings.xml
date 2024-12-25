@@ -26,18 +26,4 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
-    <string-array name="campus_array">
-        <item>CW</item>
-        <item>ST</item>
-        <item>TY</item>
-        <item>TM</item>
-        <item>LWL</item>
-    </string-array>
-
-    <string-array name="cw_room_array">
-        <item>Room 348</item>
-        <item>Room 349</item>
-        <item>Room 350</item>
-    </string-array>
-
 </resources>

@@ -5,9 +5,24 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class UpdateLocViewModel : ViewModel() {
+    private val _items = MutableLiveData<MutableList<String>>(mutableListOf())
+    val items: LiveData<MutableList<String>> get() = _items
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is update loc Fragment"
+    fun addItem(item: String) {
+        _items.value?.add(item)
+        _items.value = _items.value
     }
-    val text: LiveData<String> = _text
+
+    fun updateItem(tid: String, newMessage: String) {
+        _items.value?.let { currentItems ->
+            for (i in currentItems.indices) {
+                if (currentItems[i].contains(tid)) {
+                    currentItems[i] = newMessage
+                    break
+                }
+            }
+            _items.value = currentItems
+        }
+    }
+
 }
