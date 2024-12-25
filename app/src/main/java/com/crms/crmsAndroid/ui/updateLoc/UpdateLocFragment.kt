@@ -102,7 +102,6 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                     viewModel.addItem(message)
                 } else {
 
-                    tagInfoMap[currentTid] = message
                     viewModel.updateItem(currentTid, message)
                 }
             }
@@ -119,6 +118,13 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     override fun onPause() {
         super.onPause()
         objRfidScanner.stopReadTagLoop()
+        scannedTags.clear()
+        tagInfoMap.clear()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.clearItems()
     }
 
     override fun onDestroyView() {

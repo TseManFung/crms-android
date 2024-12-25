@@ -25,4 +25,9 @@ class UpdateLocViewModel : ViewModel() {
         }
     }
 
+    fun clearItems() {
+        _items.value?.clear()
+        _items.postValue(_items.value)
+    }
+
 }
