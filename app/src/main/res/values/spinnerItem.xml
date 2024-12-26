@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="campus_array">
+        <item>ST</item>
+        <item>CW</item>
+        <item>TM</item>
+        <item>TY</item>
+        <item>LWL</item>
+    </string-array>
+
+    <string-array name="cw_room_array">
+        <item>Room 348</item>
+        <item>Room 349</item>
+        <item>Room 350</item>
+    </string-array>
+</resources>
