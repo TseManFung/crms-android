@@ -18,6 +18,7 @@ class rfidScanner {
     private var filterData: String? = null
     private val lockCode: String;
     var loopFlag = false
+        private set
 
     init {
         this.scanner = RFIDWithUHFUART.getInstance();
@@ -52,6 +53,12 @@ class rfidScanner {
      * @param password New password to be set.
      */
     fun setPassword(password: String) {
+        if (password.length != 8) {
+            throw IllegalArgumentException("Password must be 8 characters long")
+        }
+        if (!password.matches(Regex("[0-9A-Fa-f]+"))) {
+            throw IllegalArgumentException("Password must be a hexadecimal string")
+        }
         this.password = password
     }
 
@@ -157,6 +164,9 @@ class rfidScanner {
         if (filterBank == null || filterData == null) {
             return this.scanner.setFilter(1, 0, 0, "")
         } else {
+            if (!password.matches(Regex("[0-9A-Fa-f]+"))) {
+                throw IllegalArgumentException("Filter data must be a hexadecimal string")
+            }
             val (filterPtr, filterCnt) = makePtrAndCnt(filterBank)
             return this.scanner.setFilter(filterBank, filterPtr, filterCnt * 16, filterData)
         }
