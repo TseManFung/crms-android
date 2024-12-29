@@ -39,10 +39,20 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         }
     }
 
+    private fun isValidDomain(domain: String): Boolean {
+        val validDomains = listOf("stu.vtc.edu.hk", "vtc.edu.hk")
+        return validDomains.contains(domain)
+    }
+
     // A placeholder username validation check
     private fun isUserNameValid(username: String): Boolean {
         return if (username.contains("@")) {
-            Patterns.EMAIL_ADDRESS.matcher(username).matches()
+            if (Patterns.EMAIL_ADDRESS.matcher(username).matches()) {
+                val domain = username.split("@").getOrNull(1)
+                domain != null && isValidDomain(domain)
+            } else {
+                false
+            }
         } else {
             username.isNotBlank()
         }
@@ -50,6 +60,6 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 
     // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
-        return password.length > 5
+        return password.length > 8
     }
 }

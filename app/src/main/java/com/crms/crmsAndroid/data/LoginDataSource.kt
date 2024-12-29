@@ -1,6 +1,7 @@
 package com.crms.crmsAndroid.data
 
-import com.crms.crmsAndroid.data.model.LoggedInUser
+
+import com.crms.crmsAndroid.api.requestResponse.LoggedInUser
 import java.io.IOException
 
 /**
@@ -10,8 +11,9 @@ class LoginDataSource {
 
     fun login(username: String, password: String): Result<LoggedInUser> {
         try {
-            // TODO: handle loggedInUser authentication
-            val fakeUser = LoggedInUser(java.util.UUID.randomUUID().toString(), "Jane Doe")
+            // TODO: API, get token + display name, post username + password.
+
+            val fakeUser = LoggedInUser(java.util.UUID.randomUUID().toString(), "Andy")
             return Result.Success(fakeUser)
         } catch (e: Throwable) {
             return Result.Error(IOException("Error logging in", e))
@@ -20,5 +22,6 @@ class LoginDataSource {
 
     fun logout() {
         // TODO: revoke authentication
+        // TODO: API, get /, post /.
     }
 }

@@ -1,6 +1,6 @@
 package com.crms.crmsAndroid.data
 
-import com.crms.crmsAndroid.data.model.LoggedInUser
+import com.crms.crmsAndroid.api.requestResponse.LoggedInUser
 
 /**
  * Class that requests authentication and user information from the remote data source and
@@ -29,13 +29,21 @@ class LoginRepository(val dataSource: LoginDataSource) {
 
     fun login(username: String, password: String): Result<LoggedInUser> {
         // handle login
-        val result = dataSource.login(username, password)
+        val result = dataSource.login(removeDomain(username), password)
 
         if (result is Result.Success) {
             setLoggedInUser(result.data)
         }
 
         return result
+    }
+
+    private fun removeDomain(email: String): String {
+        return if (email.contains("@")) {
+            email.split("@")[0] // Return the part before the '@'
+        } else {
+            email // Return the original string if no domain is present
+        }
     }
 
     private fun setLoggedInUser(loggedInUser: LoggedInUser) {

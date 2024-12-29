@@ -12,4 +12,6 @@ class TestRfidViewModel : ViewModel() {
         _items.value?.add(item)
         _items.value = _items.value // Trigger LiveData update
     }
+
+
 }

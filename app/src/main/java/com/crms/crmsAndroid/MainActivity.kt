@@ -7,12 +7,15 @@ import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.crms.crmsAndroid.data.LoginDataSource
+import com.crms.crmsAndroid.data.LoginRepository
 import com.crms.crmsAndroid.databinding.ActivityMainBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
@@ -28,7 +31,10 @@ class MainActivity : AppCompatActivity() {
         private set;
     lateinit var navController: NavController
         private set
-    private var isLongPress = false
+    private var isLongPress: Boolean = false
+
+    private lateinit var sharedViewModel: SharedViewModel
+
 
     init {
         System.loadLibrary("IGLBarDecoder")
@@ -38,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e("E", "can not init objRfidScanner", e)
         }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
