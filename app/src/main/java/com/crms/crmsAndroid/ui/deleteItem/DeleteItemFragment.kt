@@ -28,10 +28,7 @@ class DeleteItemFragment : Fragment() {
         _binding = FragmentDeleteItemBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textHome
-        manNewRoomViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
+
         return root
     }
 
