@@ -29,7 +29,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/roomNameEditText"
+        android:id="@+id/etRoomName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Room Name"
@@ -42,7 +42,7 @@
 
 
     <EditText
-        android:id="@+id/roomNumberEditText"
+        android:id="@+id/etRoomNumber"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Room Number"
@@ -55,7 +55,7 @@
 
 
     <EditText
-        android:id="@+id/roomDescriptionEditText"
+        android:id="@+id/etRoomDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Description of the room"
@@ -77,20 +77,20 @@
 
 
     <Button
-        android:id="@+id/addItemButton"
+        android:id="@+id/btnAddRoom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Item"
-        android:layout_below="@id/addItemButton"
+        android:text="Add Room"
+        android:layout_below="@id/etRoomDescription"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"/>
 
     <Button
-        android:id="@+id/resetButton"
+        android:id="@+id/btnReset"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Reset"
-        android:layout_below="@id/resetButton"
+        android:layout_below="@id/etRoomDescription"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"/>
 
