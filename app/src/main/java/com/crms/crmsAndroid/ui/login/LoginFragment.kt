@@ -122,6 +122,10 @@ class LoginFragment : Fragment() {
         // TODO: API, get fragment name, post /.
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcomeMsg, Toast.LENGTH_LONG).show()
+
+        // Navigate to the TestRfid fragment
+        mainActivity.navController.navigate(R.id.nav_testRfid)
+
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {
