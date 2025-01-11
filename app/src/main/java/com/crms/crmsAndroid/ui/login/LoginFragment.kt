@@ -11,13 +11,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.Toast
+import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.databinding.FragmentLoginBinding
 
 import com.crms.crmsAndroid.R
+import com.crms.crmsAndroid.SharedViewModel
 
 class LoginFragment : Fragment() {
 
@@ -27,6 +26,8 @@ class LoginFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    private lateinit var mainActivity: MainActivity
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,14 +36,17 @@ class LoginFragment : Fragment() {
     ): View? {
 
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        mainActivity = requireActivity() as MainActivity
         return binding.root
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
-            .get(LoginViewModel::class.java)
+        val sharedViewModel = ViewModelProvider(mainActivity).get(SharedViewModel::class.java)
+        loginViewModel =
+            ViewModelProvider(this, LoginViewModelFactory(sharedViewModel.loginRepository))
+                .get(LoginViewModel::class.java)
 
         val usernameEditText = binding.username
         val passwordEditText = binding.password
@@ -113,10 +117,15 @@ class LoginFragment : Fragment() {
     }
 
     private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome) + model.displayName
-        // TODO : initiate successful logged in experience
+        val welcomeMsg = getString(R.string.welcome) + model.displayName
+        // TODO: initiate successful logged in experience, ex: navigate to the different fragment
+        // TODO: API, get fragment name, post /.
         val appContext = context?.applicationContext ?: return
-        Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
+        Toast.makeText(appContext, welcomeMsg, Toast.LENGTH_LONG).show()
+
+        // Navigate to the TestRfid fragment
+        mainActivity.navController.navigate(R.id.nav_testRfid)
+
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {

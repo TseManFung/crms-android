@@ -132,7 +132,7 @@ class rfidScanner {
      * @return the data read from the tag.
      * @throws Exception if reading fails.
      */
-    fun readTag(readBank: Int): String {
+    fun readTagData(readBank: Int): String {
         val (ptr, cnt) = makePtrAndCnt(readBank)
 
         var TagData = this.scanner.readData(password, readBank, ptr, cnt)
@@ -146,6 +146,14 @@ class rfidScanner {
                 throw Exception("Failed to read tag from ${bankErrorMsg(readBank)}")
             }
         }
+    }
+
+    /**
+     * Reads a single tag.
+     * @return the tag information.
+     */
+    fun readSingleTag(): UHFTAGInfo {
+        return this.scanner.inventorySingleTag()
     }
 
     /**
@@ -180,12 +188,12 @@ class rfidScanner {
      * @return the data read from the tag.
      * @throws Exception if reading fails.
      */
-    fun readTagWithFilter(readBank: Int, filterBank: Int, filterData: String): String {
+    fun readTagDataWithFilter(readBank: Int, filterBank: Int, filterData: String): String {
         if (filterBank == 0) {
             throw IllegalArgumentException("Invalid filter bank value, filter bank cannot be Reserved Bank")
         }
         this.setFilter(filterBank, filterData)
-        return this.readTagWithFilter(readBank)
+        return this.readTagDataWithFilter(readBank)
     }
 
     /**
@@ -194,7 +202,7 @@ class rfidScanner {
      * @return the data read from the tag.
      * @throws IllegalArgumentException if filter is not set.
      */
-    fun readTagWithFilter(readBank: Int): String {
+    fun readTagDataWithFilter(readBank: Int): String {
         if (this.filterBank == null || this.filterData == null) {
             throw IllegalArgumentException("Filter not set")
         }

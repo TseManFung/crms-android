@@ -43,7 +43,16 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private fun setupUI() {
         mainActivity = requireActivity() as MainActivity
+
+        // get data way from MainActivity
         objRfidScanner = mainActivity.objRfidScanner
+
+        // put data to be shared between fragments here
+        // val sharedViewModel = ViewModelProvider(mainActivity).get(SharedViewModel::class.java)
+        // put
+        // sharedViewModel.someData = "Your data here"
+        // get
+        // val data = sharedViewModel.someData
 
         // Initialize ListView
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
