@@ -6,8 +6,30 @@ import androidx.lifecycle.ViewModel
 
 class ManInventoryViewModel : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is manInventoryman Fragment"
+    private val _items = MutableLiveData<List<String>>()
+    val items: LiveData<List<String>> get() = _items
+
+    fun fetchItemsFromApi(type: String): List<String> {
+        // Implement API call to fetch items based on type
+        return listOf() // Replace with actual API call result
     }
-    val text: LiveData<String> = _text
+
+    fun addItem(item: String) {
+        val currentItems = _items.value.orEmpty().toMutableList()
+        currentItems.add(item)
+        _items.value = currentItems
+    }
+
+    fun updateItem(tid: String, item: String) {
+        val currentItems = _items.value.orEmpty().toMutableList()
+        val index = currentItems.indexOfFirst { it.contains(tid) }
+        if (index != -1) {
+            currentItems[index] = item
+            _items.value = currentItems
+        }
+    }
+
+    fun clearItems() {
+        _items.value = emptyList()
+    }
 }
