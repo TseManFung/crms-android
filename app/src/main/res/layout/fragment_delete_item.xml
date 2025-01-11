@@ -15,6 +15,102 @@
         android:background="@color/ganyu_light"
         >
 
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal"
+            >
+
+            <RadioButton
+                android:id="@+id/chooseRmRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:minHeight="48dp"
+                android:text="Choose Room"
+                android:textColor="@color/ganyu_dark"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/scanRmRadio"
+                android:text="Scan Room"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:layout_marginLeft="35px"
+                android:layout_marginBottom="16dp"
+                android:textColor="@color/ganyu_dark"
+                />
+        </RadioGroup>
+
+
+
+
+        <!--Choose Room Part-->
+        <TextView
+            android:id="@+id/rmText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose the Room:"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/ganyu_dark"
+            android:visibility="gone"/>
+
+        <Spinner
+            android:id="@+id/rmSpin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@color/ganyu_primary"
+            android:visibility="gone"
+            />
+
+
+<!-- Scan Room Part -->
+        <Button
+            android:id="@+id/scanRmBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="Start to Scan Room/Pause"
+            android:backgroundTint="@color/ganyu_dark"
+            android:textColor="@android:color/white"
+            android:visibility="gone"
+            />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/scanRmList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="8dp"
+            android:layout_marginTop="10dp"
+            android:visibility="gone">
+
+            <ListView
+                android:id="@+id/scanRmResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp" />
+
+        </androidx.cardview.widget.CardView>
+
+
+
+
+
+
+
+
+
+        <!--Scan Item Part-->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -22,32 +118,30 @@
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_marginBottom="16dp"
-            android:textColor="@color/ganyu_dark" />
+            android:textColor="@color/ganyu_dark"
+            android:visibility="gone"/>
+
+
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:text="Start to Scan"
+            android:text="Start to Scan Item/Pause"
             android:backgroundTint="@color/ganyu_dark"
             android:textColor="@android:color/white"
+            android:visibility="gone"
             />
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Pause"
-            android:backgroundTint="@color/ganyu_silver"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="10dp"
-            />
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginBottom="16dp"
             app:cardElevation="4dp"
             app:cardCornerRadius="8dp"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="10dp"
+            android:visibility="gone">
 
             <ListView
                 android:id="@+id/listView"
