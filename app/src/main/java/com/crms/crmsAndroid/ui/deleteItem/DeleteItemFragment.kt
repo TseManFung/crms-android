@@ -1,13 +1,16 @@
 package com.crms.crmsAndroid.ui.deleteItem
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -17,7 +20,6 @@ import com.crms.crmsAndroid.databinding.FragmentDeleteItemBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
-import com.crms.crmsAndroid.ui.manInventory.ManInventoryViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -28,7 +30,6 @@ import java.net.URL
 class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private var _binding: FragmentDeleteItemBinding? = null
-    // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
     private lateinit var viewModel: DeleteItemViewModel
     private lateinit var listAdapter: ArrayAdapter<String>
@@ -37,7 +38,7 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private val tagInfoMap = mutableMapOf<String, String>()
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
-    private var scanBtnBool = true
+    private var startStatus = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,13 +47,11 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     ): View {
         _binding = FragmentDeleteItemBinding.inflate(inflater, container, false)
         viewModel = ViewModelProvider(this).get(DeleteItemViewModel::class.java)
-        val root: View = binding.root
 
         setUpUI()
         setupObservers()
 
-
-        return root
+        return binding.root
     }
 
     private fun setUpUI() {
@@ -62,25 +61,22 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         chooseRmListener()
         scanRmListener()
 
-        //Initialize ListView
-        // using the adapter that lateinit
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
         binding.scanRmResult.adapter = listAdapter
 
-        // scanRmBtn toggle button
-        binding.scanRmBtn.setOnClickListener{
-            if(scanBtnBool){
+        binding.scanRmBtn.setOnClickListener {
+            if(!startStatus){
                 handleBtnScanClick(objRfidScanner)
-            }else{
+                startStatus=true
+            }
+            else{
                 objRfidScanner.stopReadTagLoop()
                 sendDataToBackend()
+                startStatus=false
             }
         }
 
-
-
         appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
-
     }
 
     private fun setupObservers() {
@@ -91,7 +87,7 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
     }
 
-    private fun sendDataToBackend(){
+    private fun sendDataToBackend() {
         lifecycleScope.launch {
             try {
                 val url = URL("https://your-backend-endpoint.com/api/scan")
@@ -122,35 +118,32 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
     }
 
-
-
-    // handleBtnScanClick
-    private fun handleBtnScanClick(rfidScanner: rfidScanner){
-        try{
-            rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope){
-                tag ->
-                val currentTid = tag.tid
-                val message =  """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
-                if (!scannedTags.contains(currentTid)) {
-                    scannedTags.add(currentTid)
-                    tagInfoMap[currentTid] = message
-                    viewModel.addItem(message)
-                } else {
-                    viewModel.updateItem(currentTid, message)
+    private fun handleBtnScanClick(rfidScanner: rfidScanner) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.CAMERA), 1)
+        } else {
+            try {
+                rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
+                    val currentTid = tag.tid
+                    val message = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+                    if (!scannedTags.contains(currentTid)) {
+                        scannedTags.add(currentTid)
+                        tagInfoMap[currentTid] = message
+                        viewModel.addItem(message)
+                    } else {
+                        viewModel.updateItem(currentTid, message)
+                    }
                 }
-
+            } catch (e: Exception) {
+                appendTextToList("Error: ${e.message}")
             }
-        }catch(e: Exception){
-            appendTextToList("Error: ${e.message}")
         }
     }
 
-    // prevent error
     private fun appendTextToList(message: String) {
         items.add(message)
         listAdapter.notifyDataSetChanged()
     }
-
 
     override fun onPause() {
         super.onPause()
@@ -178,10 +171,7 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         handleBtnScanClick(objRfidScanner)
     }
 
-
     private fun chooseRmListener() {
-        // choose room on click
-
         val chooseRmRadio = binding.chooseRmRadio
         val rmSpin = binding.rmSpin
         val rmText = binding.rmText
@@ -202,8 +192,6 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                     position: Int,
                     id: Long
                 ) {
-                    // An item was selected. You can retrieve the selected item using
-                    // parent.getItemAtPosition(pos)
                     Toast.makeText(
                         requireContext(),
                         "Selected: " + parent.getItemAtPosition(position),
@@ -216,11 +204,9 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 }
             }
         }
-    } // chooseRmListener
+    }
 
     private fun scanRmListener() {
-        // scan room on click
-
         val scanRmRadio = binding.scanRmRadio
         val scanRmBtn = binding.scanRmBtn
         val scanRmList = binding.scanRmList
@@ -231,31 +217,24 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             scanRmList.visibility = View.VISIBLE
         }
 
-        scanRmBtn.setOnClickListener {
-            // scan room btn click
-        }
-    } // scanRmListener
+
+    }
 
     private fun initializeUI() {
-
         val rmSpin = binding.rmSpin
         val rmText = binding.rmText
-
         val scanRmBtn = binding.scanRmBtn
         val scanRmList = binding.scanRmList
 
-
         rmSpin.visibility = View.GONE
         rmText.visibility = View.GONE
-
         scanRmBtn.visibility = View.GONE
         scanRmList.visibility = View.GONE
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        items.clear()
     }
-
 }
