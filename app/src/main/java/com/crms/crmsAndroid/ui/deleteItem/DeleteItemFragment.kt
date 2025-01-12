@@ -1,6 +1,7 @@
 package com.crms.crmsAndroid.ui.deleteItem
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -64,6 +65,12 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
         binding.scanRmResult.adapter = listAdapter
 
+        binding.scanRmResult.setOnItemClickListener{
+            parent, view, position, id ->
+            val selectedItem = items[position]
+            showConfirmationDialog(selectedItem)
+        }
+
         binding.scanRmBtn.setOnClickListener {
             if(!startStatus){
                 handleBtnScanClick(objRfidScanner)
@@ -119,24 +126,22 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.CAMERA), 1)
-        } else {
-            try {
-                rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
-                    val currentTid = tag.tid
-                    val message = """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
-                    if (!scannedTags.contains(currentTid)) {
-                        scannedTags.add(currentTid)
-                        tagInfoMap[currentTid] = message
-                        viewModel.addItem(message)
-                    } else {
-                        viewModel.updateItem(currentTid, message)
-                    }
+        try {
+            rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
+                val currentTid = tag.tid
+                val message =
+                    """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+
+                if (!scannedTags.contains(currentTid)) {
+                    scannedTags.add(currentTid)
+                    tagInfoMap[currentTid] = message
+                    viewModel.addItem(message)
+                } else {
+                    viewModel.updateItem(currentTid, message)
                 }
-            } catch (e: Exception) {
-                appendTextToList("Error: ${e.message}")
             }
+        } catch (e: Exception) {
+            appendTextToList("Error: ${e.message}")
         }
     }
 
@@ -217,7 +222,6 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             scanRmList.visibility = View.VISIBLE
         }
 
-
     }
 
     private fun initializeUI() {
@@ -230,6 +234,21 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         rmText.visibility = View.GONE
         scanRmBtn.visibility = View.GONE
         scanRmList.visibility = View.GONE
+    }
+
+
+    private fun showConfirmationDialog(item: String) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Confirm Room")
+        builder.setMessage("Do you want to confirm the room for the item: $item?")
+        builder.setPositiveButton("Yes") { dialog, which ->
+            Toast.makeText(requireContext(), "Room confirmed for item: $item", Toast.LENGTH_SHORT).show()
+            // Handle the confirmation action here
+        }
+        builder.setNegativeButton("No") { dialog, which ->
+            dialog.dismiss()
+        }
+        builder.show()
     }
 
     override fun onDestroyView() {

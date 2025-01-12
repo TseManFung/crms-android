@@ -2,6 +2,7 @@
 <resources>
     <!--Just for reference in UI, need to get from DB-->
     <string-array name="campus_array">
+        <item>(Select)</item>
         <item>ST</item>
         <item>CW</item>
         <item>TM</item>
@@ -10,18 +11,21 @@
     </string-array>
 
     <string-array name="cw_room_array">
+        <item>(Select)</item>
         <item>Room 348</item>
         <item>Room 349</item>
         <item>Room 350</item>
     </string-array>
 
     <string-array name="cw_room_349_item_array">
+        <item>(Select)</item>
         <item>Robotics Dog</item>
         <item>Robotics Spiders</item>
         <item>Drone</item>
     </string-array>
 
     <string-array name="cw_room_349_item_robotdog_part_array">
+        <item>(Select)</item>
         <item>Dog Leg</item>
         <item>Laser Radar</item>
     </string-array>

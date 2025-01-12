@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 class DeleteItemViewModel : ViewModel() {
 
     private val _items = MutableLiveData<List<String>>()
-    val items: LiveData<List<String>> get() = items
+    val items: LiveData<List<String>> get() = _items
 
     fun fetchItemsFromApi(type: String): List<String> {
         // Implement API call to fetch items based on type

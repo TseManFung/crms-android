@@ -1,6 +1,5 @@
 package com.crms.crmsAndroid.ui.search
 
-import SearchViewModel
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +13,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
@@ -30,12 +28,11 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
+class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
-    // Declare binding property
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewModel:SearchViewModel
+    private lateinit var viewModel: SearchViewModel
     private lateinit var listAdapter: ArrayAdapter<String>
     private val items = mutableListOf<String>()
     private val scannedTags = mutableSetOf<String>()
@@ -49,20 +46,13 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        // Inflate the layout using view binding
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
         viewModel = ViewModelProvider(this).get(SearchViewModel::class.java)
-
-        //setupUI()
         setUpUI()
-
         setupObservers()
 
-        // Flag to track spinner initialization
-         var isSpinnerInitialized = false
+        var isSpinnerInitialized = false
 
-        // Find the Spinner by its id
         val roomText: TextView = binding.roomText
         val itemText: TextView = binding.itemText
         val partText: TextView = binding.partText
@@ -74,63 +64,47 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
         val cardView: CardView = binding.cardView
         val startPauseBtn: Button = binding.startPauseBtn
 
-        // Create an ArrayAdapter using the string array and a default spinner layout
         val campusAdapter = ArrayAdapter.createFromResource(
             requireContext(),
             R.array.campus_array,
             android.R.layout.simple_spinner_item
         )
-        // Specify the layout to use when the list of choices appears
         campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        // Apply the adapter to the spinner
         campusSpinner.adapter = campusAdapter
 
-        //------------------------------------------------------------------------------------------
-        // Create an ArrayAdapter for the room spinner
         val roomAdapter = ArrayAdapter.createFromResource(
             requireContext(),
             R.array.cw_room_array,
             android.R.layout.simple_spinner_item
         )
-        // Specify the layout to use when the list of choices appears
         roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        // Apply the adapter to the spinner
         roomSpinner.adapter = roomAdapter
 
-        //------------------------------------------------------------------------------------------
-        // Create an ArrayAdapter for the item spinner
         val itemAdapter = ArrayAdapter.createFromResource(
             requireContext(),
             R.array.cw_room_349_item_array,
             android.R.layout.simple_spinner_item
         )
-
-        // Specify the layout to use when the list of choices appears
         itemAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        // Apply the adapter to the spinner
         itemSpinner.adapter = itemAdapter
 
-        //------------------------------------------------------------------------------------------
-        // Create an ArrayAdapter for the part spinner
         val partAdapter = ArrayAdapter.createFromResource(
             requireContext(),
             R.array.cw_room_349_item_robotdog_part_array,
             android.R.layout.simple_spinner_item
         )
-        // Specify the layout to use when the list of choices appears
         partAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        // Apply the adapter to the spinner
         partSpinner.adapter = partAdapter
 
-        //------------------------------------------------------------------------------------------
-        // Set the onClickListener for the search button
-
-        // Campus Spinner onItemSelectedListener
         campusSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-
                 if (!isSpinnerInitialized) {
                     isSpinnerInitialized = true
+                    return
+                }
+
+                if (position == 0) {
+                    // Default value selected, do nothing
                     return
                 }
 
@@ -141,20 +115,20 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
                 isSpinnerInitialized = false
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing
-            }
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        // Room Spinner onItemSelectedListener
         roomSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-
                 if (!isSpinnerInitialized) {
                     isSpinnerInitialized = true
                     return
                 }
 
+                if (position == 0) {
+                    // Default value selected, do nothing
+                    return
+                }
                 val selectedItem = parent.getItemAtPosition(position).toString()
                 Toast.makeText(requireContext(), "Selected: $selectedItem", Toast.LENGTH_SHORT).show()
                 itemText.visibility = View.VISIBLE
@@ -162,17 +136,18 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
                 isSpinnerInitialized = false
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing
-            }
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        // Item Spinner onItemSelectedListener
         itemSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-
                 if (!isSpinnerInitialized) {
                     isSpinnerInitialized = true
+                    return
+                }
+
+                if (position == 0) {
+                    // Default value selected, do nothing
                     return
                 }
 
@@ -183,21 +158,20 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
                 isSpinnerInitialized = false
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing
-            }
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        // Part Spinner onItemSelectedListener
         partSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-
                 if (!isSpinnerInitialized) {
                     isSpinnerInitialized = true
                     return
                 }
 
-
+                if (position == 0) {
+                    // Default value selected, do nothing
+                    return
+                }
 
                 val selectedItem = parent.getItemAtPosition(position).toString()
                 Toast.makeText(requireContext(), "Selected: $selectedItem", Toast.LENGTH_SHORT).show()
@@ -206,9 +180,7 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
                 isSpinnerInitialized = false
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing
-            }
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
         return binding.root
@@ -222,44 +194,31 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
         }
     }
 
-
     private fun setUpUI() {
         mainActivity = requireActivity() as MainActivity
         objRfidScanner = mainActivity.objRfidScanner
 
-        // Initialize ListView
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
         binding.searchResult.adapter = listAdapter
 
-        // Set up buttons
-        binding.startPauseBtn.setOnClickListener{
-
-            if(!startStatus){
+        binding.startPauseBtn.setOnClickListener {
+            if (!startStatus) {
                 handleBtnScanClick(objRfidScanner)
-                startStatus=true
-            }
-            else{
+                startStatus = true
+            } else {
                 objRfidScanner.stopReadTagLoop()
                 sendDataToBackend()
-                startStatus=false
+                startStatus = false
             }
-
-
-
         }
 
-
         appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
-
-
     }
 
     private fun appendTextToList(text: String) {
         items.add(text)
         listAdapter.notifyDataSetChanged()
     }
-
-
 
     private fun sendDataToBackend() {
         lifecycleScope.launch {
@@ -292,14 +251,32 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        objRfidScanner.stopReadTagLoop()
+        scannedTags.clear()
+        tagInfoMap.clear()
+    }
+
+  fun stopAll(){
+        binding.roomSpinner.visibility = View.GONE
+        binding.itemSpinner.visibility = View.GONE
+        binding.partSpinner.visibility = View.GONE
+        binding.roomText.visibility = View.GONE
+        binding.itemText.visibility = View.GONE
+        binding.partText.visibility = View.GONE
+        binding.startPauseBtn.visibility = View.GONE
+        binding.cardView.visibility = View.GONE
+    }
+
     override fun onResume() {
         super.onResume()
+        stopAll()
         viewModel.clearItems()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Clear binding reference
         _binding = null
     }
 
@@ -333,7 +310,6 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
                     viewModel.updateItem(currentTid, message)
                     controlProgressBar(tag.rssi)
                 }
-
             }
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
@@ -342,16 +318,17 @@ class SearchFragment : Fragment() , ITriggerDown, ITriggerLongPress {
 
     fun controlProgressBar(value: String) {
         try {
-            val rssi = value.toFloat() // Parse the value as a Float
+            val rssi = value.toFloat()
             val progressBar: ProgressBar = binding.progressBar
             val percentage = binding.startPercentage
-            var progress = ((rssi + 100) * 100 / 60).toInt() // Calculate the progress and convert to Int
-            progress = progress.coerceAtMost(100) // Ensure the progress does not exceed 100
+            var progress = ((rssi + 100) * 100 / 60).toInt()
+            progress = progress.coerceAtMost(100)
             progressBar.progress = progress
-            percentage.text = "$progress%" // Set the text to show the percentage
+            percentage.text = "$progress%"
         } catch (e: NumberFormatException) {
             appendTextToList("Error: Invalid number format for RSSI value: $value")
         }
     }
+
 
 }
