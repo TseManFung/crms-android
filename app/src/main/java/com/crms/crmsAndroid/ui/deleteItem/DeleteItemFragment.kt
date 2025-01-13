@@ -34,12 +34,15 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private val binding get() = _binding!!
     private lateinit var viewModel: DeleteItemViewModel
     private lateinit var listAdapter: ArrayAdapter<String>
+    private lateinit var itemAdapter: ArrayAdapter<String>
     private val items = mutableListOf<String>()
+    private val itemInfo = mutableListOf<String>()
     private val scannedTags = mutableSetOf<String>()
     private val tagInfoMap = mutableMapOf<String, String>()
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
-    private var startStatus = false
+    private var roomStartStatus = false
+    private var itemStartStatus = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,21 +68,42 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
         binding.scanRmResult.adapter = listAdapter
 
-        binding.scanRmResult.setOnItemClickListener{
-            parent, view, position, id ->
-            val selectedItem = items[position]
-            showConfirmationDialog(selectedItem)
+        itemAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
+        binding.scanItemListView.adapter = itemAdapter
+
+        binding.scanRmResult.setOnItemClickListener { parent, view, position, id ->
+            if (position < items.size) {
+                val selectedItem = items[position]
+                showConfirmationDialog(selectedItem)
+            }
+        }
+
+        binding.scanItemListView.setOnItemClickListener { parent, view, position, id ->
+            if (position < items.size) {
+                val selectedItem = itemInfo[position]
+                showConfirmationDialogForItem(selectedItem)
+            }
         }
 
         binding.scanRmBtn.setOnClickListener {
-            if(!startStatus){
+            if (!roomStartStatus) {
                 handleBtnScanClick(objRfidScanner)
-                startStatus=true
-            }
-            else{
+                roomStartStatus = true
+            } else {
                 objRfidScanner.stopReadTagLoop()
                 sendDataToBackend()
-                startStatus=false
+                roomStartStatus = false
+            }
+        }
+
+        binding.scanItemBtn.setOnClickListener {
+            if (!itemStartStatus) {
+                handleBtnScanClick(objRfidScanner)
+                itemStartStatus = true
+            } else {
+                objRfidScanner.stopReadTagLoop()
+                sendDataToBackend()
+                itemStartStatus = false
             }
         }
 
@@ -202,6 +226,14 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                         "Selected: " + parent.getItemAtPosition(position),
                         Toast.LENGTH_SHORT
                     ).show()
+
+                    if(position == 0){
+                        return
+                    }
+                    binding.scanItemText.visibility = View.VISIBLE
+                    binding.scanItemBtn.visibility = View.VISIBLE
+                    binding.scanItemList.visibility = View.VISIBLE
+
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -214,9 +246,9 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private fun scanRmListener() {
         val scanRmRadio = binding.scanRmRadio
         val scanRmBtn = binding.scanRmBtn
-        val scanRmList = binding.scanRmList
+        val scanRmList = binding.scanRmResult
 
-        scanRmRadio.setOnClickListener {
+        scanRmRadio.setOnClickListener{
             initializeUI()
             scanRmBtn.visibility = View.VISIBLE
             scanRmList.visibility = View.VISIBLE
@@ -228,7 +260,7 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         val rmSpin = binding.rmSpin
         val rmText = binding.rmText
         val scanRmBtn = binding.scanRmBtn
-        val scanRmList = binding.scanRmList
+        val scanRmList = binding.scanRmResult
 
         rmSpin.visibility = View.GONE
         rmText.visibility = View.GONE
@@ -242,7 +274,25 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         builder.setTitle("Confirm Room")
         builder.setMessage("Do you want to confirm the room for the item: $item?")
         builder.setPositiveButton("Yes") { dialog, which ->
-            Toast.makeText(requireContext(), "Room confirmed for item: $item", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Room confirmed for item: $item", Toast.LENGTH_SHORT)
+                .show()
+            // Handle the confirmation action here
+            binding.scanItemText.visibility = View.VISIBLE
+            binding.scanItemBtn.visibility = View.VISIBLE
+            binding.scanItemList.visibility = View.VISIBLE
+        }
+        builder.setNegativeButton("No") { dialog, which ->
+            dialog.dismiss()
+        }
+        builder.show()
+    }
+
+    private fun showConfirmationDialogForItem(item: String) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Confirm Item")
+        builder.setMessage("Do you want to confirm the item: $item?")
+        builder.setPositiveButton("Yes") { dialog, which ->
+            Toast.makeText(requireContext(), "Item confirmed: $item", Toast.LENGTH_SHORT).show()
             // Handle the confirmation action here
         }
         builder.setNegativeButton("No") { dialog, which ->
@@ -250,6 +300,7 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
         builder.show()
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

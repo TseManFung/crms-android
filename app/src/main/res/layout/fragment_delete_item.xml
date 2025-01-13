@@ -12,15 +12,13 @@
         android:orientation="vertical"
         android:gravity="center_horizontal"
         android:padding="16dp"
-        android:background="@color/ganyu_light"
-        >
+        android:background="@color/ganyu_light">
 
         <RadioGroup
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_horizontal"
-            >
+            android:gravity="center_horizontal">
 
             <RadioButton
                 android:id="@+id/chooseRmRadio"
@@ -43,14 +41,10 @@
                 android:textStyle="bold"
                 android:layout_marginLeft="35px"
                 android:layout_marginBottom="16dp"
-                android:textColor="@color/ganyu_dark"
-                />
+                android:textColor="@color/ganyu_dark" />
         </RadioGroup>
 
-
-
-
-        <!--Choose Room Part-->
+        <!-- Choose Room Part -->
         <TextView
             android:id="@+id/rmText"
             android:layout_width="wrap_content"
@@ -60,7 +54,7 @@
             android:textStyle="bold"
             android:layout_marginBottom="16dp"
             android:textColor="@color/ganyu_dark"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <Spinner
             android:id="@+id/rmSpin"
@@ -68,11 +62,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:background="@color/ganyu_primary"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
 
-
-<!-- Scan Room Part -->
+        <!-- Scan Room Part -->
         <Button
             android:id="@+id/scanRmBtn"
             android:layout_width="match_parent"
@@ -81,18 +73,9 @@
             android:text="Start to Scan Room/Pause"
             android:backgroundTint="@color/ganyu_dark"
             android:textColor="@android:color/white"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/scanRmList"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="16dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="8dp"
-            android:layout_marginTop="10dp"
-            android:visibility="gone">
+
 
             <ListView
                 android:id="@+id/scanRmResult"
@@ -100,37 +83,31 @@
                 android:layout_height="wrap_content"
                 android:padding="8dp" />
 
-        </androidx.cardview.widget.CardView>
 
-
-
-
-
-        <!--Scan Item Part-->
         <TextView
+            android:id="@+id/scanItemText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:text="Scan Item's Label to Delete:"
+            android:textColor="@color/ganyu_dark"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_marginBottom="16dp"
-            android:textColor="@color/ganyu_dark"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
-
-
+        <!-- Scan Item Part -->
         <Button
+            android:id="@+id/scanItemBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:text="Start to Scan Item/Pause"
-            android:backgroundTint="@color/ganyu_dark"
+            android:backgroundTint="@color/ganyu_silver"
             android:textColor="@android:color/white"
-            android:visibility="gone"
-            />
-
+            android:visibility="gone" />
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/scanItemList"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginBottom="16dp"
@@ -140,16 +117,10 @@
             android:visibility="gone">
 
             <ListView
-                android:id="@+id/listView"
+                android:id="@+id/scanItemListView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="8dp" />
-
         </androidx.cardview.widget.CardView>
-
-
-
     </LinearLayout>
 </ScrollView>
-
-
