@@ -1,3 +1,4 @@
+// ManInventoryFragment.kt
 package com.crms.crmsAndroid.ui.manInventory
 
 import android.os.Bundle
@@ -5,11 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-
 import androidx.fragment.app.Fragment
-
 import androidx.lifecycle.ViewModelProvider
-
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.R
@@ -17,14 +15,12 @@ import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
 import com.crms.crmsAndroid.databinding.FragmentManInventoryBinding
-import com.crms.crmsAndroid.databinding.FragmentUpdateLocBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
-
 
 class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
@@ -65,8 +61,16 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             handleBtnScanClick(objRfidScanner)
         }
         binding.btnStop.setOnClickListener {
-            objRfidScanner.stopReadTagLoop()
-            sendDataToBackend() // Send data after stopping the scan
+            if (binding.btnStop.text == "Stop") {
+                objRfidScanner.stopReadTagLoop()
+                sendDataToBackend() // Send data after stopping the scan
+                binding.btnStop.text = "Clear"
+            } else {
+                clearAllData()
+            }
+        }
+        binding.btnSearchRoom.setOnClickListener {
+            showScanButton()
         }
 
         // Set up Campus Spinner
@@ -97,6 +101,9 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             items.clear()
             items.addAll(newItems)
             listAdapter.notifyDataSetChanged()
+            if (items.isNotEmpty()) {
+                binding.cardViewList.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -115,6 +122,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                     viewModel.updateItem(currentTid, message)
                 }
             }
+            binding.linearLayoutStopClear.visibility = View.VISIBLE
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
         }
@@ -149,6 +157,19 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 appendTextToList("Error: ${e.message}")
             }
         }
+    }
+
+    private fun clearAllData() {
+        scannedTags.clear()
+        tagInfoMap.clear()
+        viewModel.clearItems()
+        binding.cardViewList.visibility = View.GONE
+        binding.linearLayoutStopClear.visibility = View.GONE
+        binding.btnStop.text = "Stop"
+    }
+
+    private fun showScanButton() {
+        binding.btnSearch.visibility = View.VISIBLE
     }
 
     private fun appendTextToList(text: String) {
