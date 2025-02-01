@@ -345,11 +345,11 @@ class rfidScanner {
         val (ptr, cnt) = makePtrAndCnt(writeBank)
         var result = this.scanner.writeData(password, writeBank, ptr, cnt, data)
         if (result) {
+            lockTag()
             this.scanner.setPower(originalPower)
             return true
         } else {
             result = this.scanner.writeData(defaultPassword, writeBank, ptr, cnt, data)
-            lockTag()
             if (result) {
                 this.scanner.setPower(originalPower)
                 return true
@@ -411,6 +411,7 @@ class rfidScanner {
             data
         )
         if (result) {
+            lockTag()
             this.scanner.setPower(originalPower)
             return true
         } else {
@@ -425,7 +426,6 @@ class rfidScanner {
                 writeCnt,
                 data
             )
-            lockTag()
             if (result) {
                 this.scanner.setPower(originalPower)
                 return true
@@ -435,6 +435,22 @@ class rfidScanner {
             }
         }
 
+    }
+
+    /**
+     * Locks the tag with the current applied filter.
+     * @return true if the lock operation was successful, false otherwise.
+     * @throws IllegalArgumentException if the filter is not set.
+     */
+    fun setTagPassword(newPassword: String): Boolean {
+        if (newPassword.length != 8) {
+            throw IllegalArgumentException("Password must be 8 characters long")
+        }
+        if (!newPassword.matches(Regex("[0-9A-Fa-f]+"))) {
+            throw IllegalArgumentException("Password must be a hexadecimal string")
+        }
+        val p = newPassword+newPassword
+        return writeTag(Bank_RESERVED, p)
     }
 
 
