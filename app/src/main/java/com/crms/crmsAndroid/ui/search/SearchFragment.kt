@@ -55,7 +55,7 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         compassManager = CompassManager(requireContext())
 
-        // 模拟 RFID 读取器计算的位置和方向
+        // 模拟 RFID scanner cal的位置和方向
         val estimatedX = 5.0
         val estimatedY = 5.0
 
