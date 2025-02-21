@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import com.crms.crmsAndroid.utils.CompassManager
 
 class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
@@ -40,6 +41,7 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
     private var startStatus = false
+    private lateinit var compassManager: CompassManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +52,12 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         viewModel = ViewModelProvider(this).get(SearchViewModel::class.java)
         setUpUI()
         setupObservers()
+
+        compassManager = CompassManager(requireContext())
+
+        // 模拟 RFID 读取器计算的位置和方向
+        val estimatedX = 5.0
+        val estimatedY = 5.0
 
         var isSpinnerInitialized = false
 
@@ -200,7 +208,6 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
         binding.searchResult.adapter = listAdapter
-
         binding.startPauseBtn.setOnClickListener {
             if (!startStatus) {
                 handleBtnScanClick(objRfidScanner)
@@ -258,7 +265,7 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         tagInfoMap.clear()
     }
 
-  fun stopAll(){
+    fun stopAll(){
         binding.roomSpinner.visibility = View.GONE
         binding.itemSpinner.visibility = View.GONE
         binding.partSpinner.visibility = View.GONE
@@ -330,5 +337,8 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
     }
 
-
+    private fun calculateDirection(x1: Double, y1: Double, x2: Double, y2: Double): Double {
+        val angle = Math.toDegrees(Math.atan2(y2 - y1, x2 - x1))
+        return if (angle < 0) angle + 360 else angle
+    }
 }
