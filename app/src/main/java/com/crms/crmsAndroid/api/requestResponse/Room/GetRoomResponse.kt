@@ -3,12 +3,12 @@ package com.crms.crmsAndroid.api.requestResponse.Room
 import com.crms.crmsAndroid.api.requestResponse.Response
 
 data class GetRoomResponse(
-    val Rooms: List<SingleRoomResponse>
+    val rooms: List<SingleRoomResponse>
 ): Response {
     data class SingleRoomResponse(
-        val room: Int,
-        val campusId: Int,
-        val roomNumber: String,
-        val roomName: String,
+        val room: Int ? = null,
+        val campusId: Int ? = null ,
+        val roomNumber: String ? = null,
+        val roomName: String ? = null,
     )
 }

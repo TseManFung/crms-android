@@ -20,6 +20,7 @@ import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private var _binding: FragmentManInventoryBinding? = null
@@ -74,6 +75,8 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 resetAllData()
                 val selectedCampus = viewModel.campuses.value?.get(position)
+                Log.d("Fragment", "Selected Campus ID: ${selectedCampus?.campusId}")
+
                 selectedCampus?.campusId?.let { campusId ->
                     viewModel.fetchRooms(campusId)
                 }
@@ -111,6 +114,16 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun setupObservers() {
+
+
+        viewModel.items.observe(viewLifecycleOwner) { newItems ->
+            Log.d("Fragment", "Observed items change. Size: ${newItems.size}")
+            items.clear()
+            items.addAll(newItems)
+            listAdapter.notifyDataSetChanged()
+            binding.cardViewList.visibility = if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
+        }
+
         viewModel.campuses.observe(viewLifecycleOwner) { campuses ->
             campuses?.let {
                 Log.d("Fragment", "Received ${campuses.size} campuses")
@@ -121,6 +134,13 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         viewModel.errorMessage.observe(viewLifecycleOwner) { error ->
             error?.let {
                 Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        viewModel.rooms.observe(viewLifecycleOwner) { rooms ->
+            rooms?.let {
+                Log.d("Fragment", "Received ${rooms.size} rooms: ${rooms.map { it.roomName }}")
+                updateRoomSpinner(rooms)
             }
         }
     }
@@ -138,6 +158,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private fun updateRoomSpinner(rooms: List<GetRoomResponse.SingleRoomResponse>) {
         val roomNames = rooms.map { it.roomName ?: "Unknown" }
+        Log.d("Fragment", "Room names: $roomNames")
         roomAdapter.clear()
         roomAdapter.addAll(roomNames)
         roomAdapter.notifyDataSetChanged()
@@ -154,13 +175,14 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         try {
             rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
                 val currentTid = tag.tid
+                val currentRFID = tag.epc
                 val message =
                     """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
-
+                Log.d("Fragment", message)
                 if (!scannedTags.contains(currentTid)) {
                     scannedTags.add(currentTid)
                     tagInfoMap[currentTid] = message
-                    viewModel.addItem(message)
+                    viewModel.addItem(message) // 确保此方法被调用
                 } else {
                     viewModel.updateItem(currentTid, message)
                 }

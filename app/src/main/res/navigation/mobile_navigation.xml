@@ -68,4 +68,13 @@
         tools:layout="@layout/fragment_test_rfid"
         />
 
+    <fragment
+        android:id="@+id/action_settings"
+        android:name="com.crms.crmsAndroid.ui.setting.SettingFragment"
+        android:label="Setting"
+        tools:layout="@layout/fragment_setting"
+        />
+
+
+
 </navigation>

@@ -31,6 +31,6 @@ interface IApiService {
     @POST("getcampus")
     suspend fun getCampus(@Body request: GetCampusRequest): Response<GetCampusResponse>
 
-    @POST("getRooms")
+    @POST("getrooms")
     suspend fun getRooms(@Body request: GetRoomRequest): Response<GetRoomResponse>
 }

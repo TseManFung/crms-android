@@ -12,6 +12,7 @@ import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
 import kotlinx.coroutines.launch
 
 class ManInventoryViewModel : ViewModel() {
+    //scanned data
     private val _items = MutableLiveData<List<String>>()
     val items: LiveData<List<String>> get() = _items
 
@@ -27,7 +28,7 @@ class ManInventoryViewModel : ViewModel() {
     private val _rooms = MutableLiveData<List<GetRoomResponse.SingleRoomResponse>>()
     val rooms: LiveData<List<GetRoomResponse.SingleRoomResponse>> = _rooms
     // Hardcoded token
-    private val hardcodedToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMzAxMDQ1NzciLCJhY2Nlc3NMZXZlbCI6MTAwLCJpYXQiOjE3NDM1MTQ1NzcsImV4cCI6MTc0NDUxNDU3N30.5Quz04a15xC7JbfKDOJ5i_zygjW_6zXMLEr4hptyVpE"
+    private val hardcodedToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMzAwMjY5NjQiLCJhY2Nlc3NMZXZlbCI6MCwiaWF0IjoxNzQzNzYwMTQzLCJleHAiOjE3NDQ3NjAxNDN9.d0sTXq3YJPnOVzxwEV6oKplI9W3tqqQu47TGk_eW0Vo"
 
     init {
         fetchCampuses()
@@ -50,8 +51,10 @@ class ManInventoryViewModel : ViewModel() {
         viewModelScope.launch {
             val result = roomRepository.getRooms(hardcodedToken, campusID)
             result.onSuccess { rooms ->
+                Log.d("ViewModel", "API Response Rooms: $rooms") // 添加此行
                 _rooms.value = rooms
             }.onFailure { exception ->
+                Log.e("ViewModel", "API Error: ${exception.message}") // 添加此行
                 _errorMessage.value = "Failed to load rooms: ${exception.message}"
             }
         }
@@ -60,7 +63,8 @@ class ManInventoryViewModel : ViewModel() {
     fun addItem(item: String) {
         val currentItems = _items.value.orEmpty().toMutableList()
         currentItems.add(item)
-        _items.value = currentItems
+        _items.value = currentItems // 更新 LiveData
+        Log.d("ViewModel", "Added item: $item, Total: ${currentItems.size}")
     }
 
     fun updateItem(tid: String, item: String) {

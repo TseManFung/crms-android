@@ -13,7 +13,7 @@ class RoomRepository {
             val response = RetrofitClient.instance.getRooms(request)
 
             if (response.isSuccessful) {
-                Result.success(response.body()?.Rooms ?: emptyList())
+                Result.success(response.body()?.rooms ?: emptyList())
             } else {
                 Result.failure(Exception("API error: ${response.code()}"))
             }
