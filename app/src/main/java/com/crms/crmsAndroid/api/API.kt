@@ -11,7 +11,7 @@
 //        .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
 //        .build()
 //
-//    private val apiService: IApiService = retrofit.create(IApiService::class.java)
+//    private val apiService : IApiService = retrofit.create(IApiService::class.java)
 //
 //    // 提供登录方法
 //    fun login(username: String, password: String, callback: retrofit2.Callback<LoggedInUser>) {

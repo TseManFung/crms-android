@@ -15,6 +15,7 @@ import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryResponse
 import com.crms.crmsAndroid.databinding.FragmentManInventoryBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
@@ -27,7 +28,8 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private val binding get() = _binding!!
     private val viewModel: ManInventoryViewModel by viewModels()
 
-    private lateinit var listAdapter: ArrayAdapter<String>
+    private lateinit var listAdapter: CustomAdapter
+
     private val items = mutableListOf<String>()
     private val scannedTags = mutableSetOf<String>()
     private val tagInfoMap = mutableMapOf<String, String>()
@@ -55,7 +57,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         objRfidScanner = mainActivity.objRfidScanner
 
         // Initialize ListView
-        listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
+        listAdapter = CustomAdapter()
         binding.lvSearchResult.adapter = listAdapter
 
         // Initialize Campus Spinner with empty adapter (will be populated by API)
@@ -67,7 +69,10 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             mutableListOf())
         roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spnRoom.adapter = roomAdapter
-
+        //set up send to backend button
+        binding.btnSendToBackend.setOnClickListener {
+            sendDataToBackend()
+        }
 
 
         // 设置校区 Spinner 选择监听
@@ -105,13 +110,12 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 clearAllData()
             }
         }
-        binding.btnSearchRoom.setOnClickListener {
-            showScanButton()
-        }
+
 
 
         appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
     }
+
 
     private fun setupObservers() {
 
@@ -143,7 +147,15 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 updateRoomSpinner(rooms)
             }
         }
+
+        viewModel.manualInventoryResult.observe(viewLifecycleOwner) { result ->
+            result?.let {
+                handleManualInventoryResult(it)
+            }
+        }
     }
+
+
 
     private fun updateCampusSpinner(campuses: List<GetCampusResponse.Campus>) {
         val campusShortName = campuses.map { it.campusShortName ?: "Unknown" }
@@ -194,8 +206,69 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun sendDataToBackend() {
+        val rfidList = scannedTags.toList()
+        val selectedRoomPosition = binding.spnRoom.selectedItemPosition
+        val roomId = viewModel.rooms.value?.get(selectedRoomPosition)?.room ?: run {
+            Toast.makeText(context, "Please select a room", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         lifecycleScope.launch {
-            // Your existing implementation
+            viewModel.sendManualInventory(rfidList, roomId)
+        }
+    }
+
+    private fun handleManualInventoryResult(result: Result<ManualInventoryResponse>) {
+        result.onSuccess { response ->
+            updateUIWithResponse(response)
+            Toast.makeText(context, "Inventory updated successfully", Toast.LENGTH_SHORT).show()
+        }.onFailure { exception ->
+            Toast.makeText(context, "Error: ${exception.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun updateUIWithResponse(response: ManualInventoryResponse) {
+        // 创建包含状态信息的列表
+        val itemsWithStatus = response.manualInventoryLists.map { item ->
+            Triple(
+                "Device: ${item.deviceName} (${item.RFID})",
+                item.afterState,
+                when(item.afterState) {
+                    'A' -> R.color.green_state   // 正常状态
+                    'B' -> R.color.yellow_state  // 借出状态
+                    else -> R.color.gray_state    // 未找到
+                }
+            )
+        }
+
+        // 排序：绿色在前，灰色在中，黄色在后
+        val sortedItems = itemsWithStatus.sortedBy { (_, state, _) ->
+            when(state) {
+                'A' -> 0
+                'C' -> 1
+                else -> 2
+            }
+        }
+
+        // 更新Adapter
+        (binding.lvSearchResult.adapter as CustomAdapter).apply {
+            clear()
+            addAll(sortedItems)
+            notifyDataSetChanged()
+        }
+
+        binding.cardViewList.visibility = View.VISIBLE
+    }
+
+    private inner class CustomAdapter : ArrayAdapter<Triple<String, Char, Int>>(
+        requireContext(),
+        android.R.layout.simple_list_item_1
+    ) {
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = super.getView(position, convertView, parent)
+            val item = getItem(position)
+            view.setBackgroundResource(item?.third ?: android.R.color.transparent)
+            return view
         }
     }
 

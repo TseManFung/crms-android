@@ -19,6 +19,8 @@ import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomRequest
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusRequest
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryRequest
+import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -33,4 +35,7 @@ interface IApiService {
 
     @POST("getrooms")
     suspend fun getRooms(@Body request: GetRoomRequest): Response<GetRoomResponse>
+
+    @POST("manualinventory")
+    suspend fun manualinventory(@Body request: ManualInventoryRequest): Response<ManualInventoryResponse>
 }

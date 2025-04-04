@@ -6,9 +6,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crms.crmsAndroid.api.repository.CampusRepository
+import com.crms.crmsAndroid.api.repository.ManualInventoryRepository
 import com.crms.crmsAndroid.api.repository.RoomRepository
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryResponse
 import kotlinx.coroutines.launch
 
 class ManInventoryViewModel : ViewModel() {
@@ -27,6 +29,10 @@ class ManInventoryViewModel : ViewModel() {
     private val roomRepository = RoomRepository()
     private val _rooms = MutableLiveData<List<GetRoomResponse.SingleRoomResponse>>()
     val rooms: LiveData<List<GetRoomResponse.SingleRoomResponse>> = _rooms
+    //Manual Inventory Data
+    private val manualInventoryRepo = ManualInventoryRepository()
+    private val _manualInventoryResult = MutableLiveData<Result<ManualInventoryResponse>>()
+    val manualInventoryResult: LiveData<Result<ManualInventoryResponse>> = _manualInventoryResult
     // Hardcoded token
     private val hardcodedToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMzAwMjY5NjQiLCJhY2Nlc3NMZXZlbCI6MCwiaWF0IjoxNzQzNzYwMTQzLCJleHAiOjE3NDQ3NjAxNDN9.d0sTXq3YJPnOVzxwEV6oKplI9W3tqqQu47TGk_eW0Vo"
 
@@ -60,6 +66,17 @@ class ManInventoryViewModel : ViewModel() {
         }
     }
 
+    fun sendManualInventory(rfidList: List<String>, roomId: Int) {
+        viewModelScope.launch {
+            val result = manualInventoryRepo.manualInventory(
+                token = hardcodedToken,
+                manualInventoryLists = rfidList,
+                roomID = roomId
+            )
+            _manualInventoryResult.postValue(result)
+        }
+    }
+
     fun addItem(item: String) {
         val currentItems = _items.value.orEmpty().toMutableList()
         currentItems.add(item)
@@ -79,4 +96,5 @@ class ManInventoryViewModel : ViewModel() {
     fun clearItems() {
         _items.value = emptyList()
     }
+
 }
