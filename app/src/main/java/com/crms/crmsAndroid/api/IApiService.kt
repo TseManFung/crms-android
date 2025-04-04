@@ -15,6 +15,8 @@ package com.crms.crmsAndroid.api
 //}
 
 import com.crms.crmsAndroid.api.requestResponse.*
+import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomRequest
+import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusRequest
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
 import retrofit2.Response
@@ -27,4 +29,7 @@ interface IApiService {
 
     @POST("getcampus")
     suspend fun getCampus(@Body request: GetCampusRequest): Response<GetCampusResponse>
+
+    @POST("getRooms")
+    suspend fun getRooms(@Body request: GetRoomRequest): Response<GetRoomResponse>
 }
