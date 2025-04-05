@@ -99,15 +99,17 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.btnStop.setOnClickListener {
             if (binding.btnStop.text == "Stop") {
                 objRfidScanner.stopReadTagLoop()
-                sendDataToBackend()
                 binding.btnStop.text = "Clear"
             } else {
                 clearAllData()
+                binding.btnSendToBackend.visibility = View.GONE // Hide btnSendToBackend
             }
         }
 
         appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
     }
+
+
 
     private fun setupObservers() {
         viewModel.items.observe(viewLifecycleOwner) { newItems ->
@@ -187,6 +189,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 }
             }
             binding.linearLayoutStopClear.visibility = View.VISIBLE
+            binding.btnSendToBackend.visibility = View.VISIBLE // Show btnSendToBackend
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
         }
@@ -250,6 +253,8 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.cardViewList.visibility = View.VISIBLE
     }
 
+
+
     private inner class CustomAdapter : ArrayAdapter<Triple<String, Char, Int>>(
         requireContext(),
         android.R.layout.simple_list_item_1
@@ -286,6 +291,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.cardViewList.visibility = View.GONE
         binding.linearLayoutStopClear.visibility = View.GONE
         binding.btnStop.text = "Stop"
+        binding.btnSendToBackend.visibility = View.GONE // Hide btnSendToBackend
     }
 
     private fun showScanButton() {

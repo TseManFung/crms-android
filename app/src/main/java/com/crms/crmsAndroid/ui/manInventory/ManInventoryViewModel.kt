@@ -34,7 +34,7 @@ class ManInventoryViewModel : ViewModel() {
     private val _manualInventoryResult = MutableLiveData<Result<ManualInventoryResponse>>()
     val manualInventoryResult: LiveData<Result<ManualInventoryResponse>> = _manualInventoryResult
     // Hardcoded token
-    private val hardcodedToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMzAwMjY5NjQiLCJhY2Nlc3NMZXZlbCI6MCwiaWF0IjoxNzQzNzYwMTQzLCJleHAiOjE3NDQ3NjAxNDN9.d0sTXq3YJPnOVzxwEV6oKplI9W3tqqQu47TGk_eW0Vo"
+    private val hardcodedToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMzAxMDQ1NzciLCJhY2Nlc3NMZXZlbCI6MTAwLCJpYXQiOjE3NDM4MDI5OTcsImV4cCI6MTc0NDgwMjk5N30.2_YenK__fFXbz6a5Cjt5C3FcO1oG6c1CViqhFNFIIGs"
 
     init {
         fetchCampuses()

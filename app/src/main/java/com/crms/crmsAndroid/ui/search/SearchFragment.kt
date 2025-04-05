@@ -1,39 +1,45 @@
 package com.crms.crmsAndroid.ui.search
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.ProgressBar
-import android.widget.Spinner
-import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.R
+import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
+import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.GetItemResponse
 import com.crms.crmsAndroid.databinding.FragmentSearchBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
+import com.crms.crmsAndroid.utils.CompassManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
-import com.crms.crmsAndroid.utils.CompassManager
 
 class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
-
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewModel: SearchViewModel
+    private val viewModel: SearchViewModel by viewModels()
+
+    private lateinit var campusAdapter: ArrayAdapter<String>
+    private lateinit var roomAdapter: ArrayAdapter<String>
+    private lateinit var deviceAdapter: ArrayAdapter<String>
+    private lateinit var partAdapter: ArrayAdapter<String>
     private lateinit var listAdapter: ArrayAdapter<String>
     private val items = mutableListOf<String>()
     private val scannedTags = mutableSetOf<String>()
@@ -49,165 +55,82 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(this).get(SearchViewModel::class.java)
-        setUpUI()
+        setupUI()
         setupObservers()
-
-        compassManager = CompassManager(requireContext())
-
-        // 模拟 RFID scanner cal的位置和方向
-        val estimatedX = 5.0
-        val estimatedY = 5.0
-
-        var isSpinnerInitialized = false
-
-        val roomText: TextView = binding.roomText
-        val itemText: TextView = binding.itemText
-        val partText: TextView = binding.partText
-        val campusSpinner: Spinner = binding.campusSpinner
-        val roomSpinner: Spinner = binding.roomSpinner
-        val itemSpinner: Spinner = binding.itemSpinner
-        val partSpinner: Spinner = binding.partSpinner
-        val progressBar: ProgressBar = binding.progressBar
-        val cardView: CardView = binding.cardView
-        val startPauseBtn: Button = binding.startPauseBtn
-
-        val campusAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.campus_array,
-            android.R.layout.simple_spinner_item
-        )
-        campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        campusSpinner.adapter = campusAdapter
-
-        val roomAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.cw_room_array,
-            android.R.layout.simple_spinner_item
-        )
-        roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        roomSpinner.adapter = roomAdapter
-
-        val itemAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.cw_room_349_item_array,
-            android.R.layout.simple_spinner_item
-        )
-        itemAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        itemSpinner.adapter = itemAdapter
-
-        val partAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.cw_room_349_item_robotdog_part_array,
-            android.R.layout.simple_spinner_item
-        )
-        partAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        partSpinner.adapter = partAdapter
-
-        campusSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (!isSpinnerInitialized) {
-                    isSpinnerInitialized = true
-                    return
-                }
-
-                if (position == 0) {
-                    // Default value selected, do nothing
-                    return
-                }
-
-                val selectedItem = parent.getItemAtPosition(position).toString()
-                Toast.makeText(requireContext(), "Selected: $selectedItem", Toast.LENGTH_SHORT).show()
-                roomText.visibility = View.VISIBLE
-                roomSpinner.visibility = View.VISIBLE
-                isSpinnerInitialized = false
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
-        roomSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (!isSpinnerInitialized) {
-                    isSpinnerInitialized = true
-                    return
-                }
-
-                if (position == 0) {
-                    // Default value selected, do nothing
-                    return
-                }
-                val selectedItem = parent.getItemAtPosition(position).toString()
-                Toast.makeText(requireContext(), "Selected: $selectedItem", Toast.LENGTH_SHORT).show()
-                itemText.visibility = View.VISIBLE
-                itemSpinner.visibility = View.VISIBLE
-                isSpinnerInitialized = false
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
-        itemSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (!isSpinnerInitialized) {
-                    isSpinnerInitialized = true
-                    return
-                }
-
-                if (position == 0) {
-                    // Default value selected, do nothing
-                    return
-                }
-
-                val selectedItem = parent.getItemAtPosition(position).toString()
-                Toast.makeText(requireContext(), "Selected: $selectedItem", Toast.LENGTH_SHORT).show()
-                partText.visibility = View.VISIBLE
-                partSpinner.visibility = View.VISIBLE
-                isSpinnerInitialized = false
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
-        partSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (!isSpinnerInitialized) {
-                    isSpinnerInitialized = true
-                    return
-                }
-
-                if (position == 0) {
-                    // Default value selected, do nothing
-                    return
-                }
-
-                val selectedItem = parent.getItemAtPosition(position).toString()
-                Toast.makeText(requireContext(), "Selected: $selectedItem", Toast.LENGTH_SHORT).show()
-                startPauseBtn.visibility = View.VISIBLE
-                cardView.visibility = View.VISIBLE
-                isSpinnerInitialized = false
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
         return binding.root
     }
 
-    private fun setupObservers() {
-        viewModel.items.observe(viewLifecycleOwner) { newItems ->
-            items.clear()
-            items.addAll(newItems)
-            listAdapter.notifyDataSetChanged()
-        }
-    }
-
-    private fun setUpUI() {
+    private fun setupUI() {
         mainActivity = requireActivity() as MainActivity
         objRfidScanner = mainActivity.objRfidScanner
+        compassManager = CompassManager(requireContext())
 
+        // Initialize ListView
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
         binding.searchResult.adapter = listAdapter
+
+        // Initialize Campus Spinner
+        campusAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.campusSpinner.adapter = campusAdapter
+
+        // Initialize Room Spinner
+        roomAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.roomSpinner.adapter = roomAdapter
+
+        // Initialize Device Spinner
+        deviceAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        deviceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.itemSpinner.adapter = deviceAdapter
+
+        // Initialize Part Spinner
+        partAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        partAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.partSpinner.adapter = partAdapter
+
+        // Campus Spinner selection listener
+        binding.campusSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedCampus = viewModel.campuses.value?.get(position)
+                selectedCampus?.campusId?.let { campusId ->
+                    viewModel.fetchRooms(campusId)
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Room Spinner selection listener
+        binding.roomSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedRoom = viewModel.rooms.value?.get(position)
+                selectedRoom?.room?.let { roomId ->
+                    viewModel.fetchDevices(roomId)
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Device Spinner selection listener
+        binding.itemSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                // Handle device selection
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Part Spinner selection listener
+        binding.partSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                // Handle part selection
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
         binding.startPauseBtn.setOnClickListener {
             if (!startStatus) {
                 handleBtnScanClick(objRfidScanner)
@@ -220,6 +143,73 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
 
         appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
+    }
+
+    private fun setupObservers() {
+        viewModel.campuses.observe(viewLifecycleOwner) { campuses ->
+            campuses?.let {
+                updateCampusSpinner(campuses)
+            }
+        }
+
+        viewModel.rooms.observe(viewLifecycleOwner) { rooms ->
+            rooms?.let {
+                updateRoomSpinner(rooms)
+            }
+        }
+
+        viewModel.devices.observe(viewLifecycleOwner) { devices ->
+            devices?.let {
+                updateDeviceSpinner(devices)
+            }
+        }
+
+        viewModel.errorMessage.observe(viewLifecycleOwner) { error ->
+            error?.let {
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        viewModel.items.observe(viewLifecycleOwner) { newItems ->
+            items.clear()
+            items.addAll(newItems)
+            listAdapter.notifyDataSetChanged()
+        }
+    }
+
+    private fun updateCampusSpinner(campuses: List<GetCampusResponse.Campus>) {
+        val campusNames = campuses.map { it.campusShortName ?: "Unknown" }
+        campusAdapter.clear()
+        campusAdapter.addAll(campusNames)
+        campusAdapter.notifyDataSetChanged()
+
+        if (campusNames.isNotEmpty()) {
+            binding.campusSpinner.setSelection(0)
+        }
+    }
+
+    private fun updateRoomSpinner(rooms: List<GetRoomResponse.SingleRoomResponse>) {
+        val roomNames = rooms.map { it.roomName ?: "Unknown" }
+        roomAdapter.clear()
+        roomAdapter.addAll(roomNames)
+        roomAdapter.notifyDataSetChanged()
+
+        if (roomNames.isNotEmpty()) {
+            binding.roomSpinner.setSelection(0)
+            binding.roomSpinner.visibility = View.VISIBLE // 确保房间下拉菜单可见
+            binding.roomText.visibility = View.VISIBLE // 确保房间文本可见
+        }
+    }
+
+    private fun updateDeviceSpinner(devices: List<GetItemResponse.Devices>) {
+        val deviceNames = devices.map { it.deviceName ?: "Unknown" }
+        deviceAdapter.clear()
+        deviceAdapter.addAll(deviceNames)
+        deviceAdapter.notifyDataSetChanged()
+
+        if (deviceNames.isNotEmpty()) {
+            binding.itemSpinner.setSelection(0)
+        }
     }
 
     private fun appendTextToList(text: String) {
@@ -256,49 +246,6 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 appendTextToList("Error: ${e.message}")
             }
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        objRfidScanner.stopReadTagLoop()
-        scannedTags.clear()
-        tagInfoMap.clear()
-    }
-
-    fun stopAll(){
-        binding.roomSpinner.visibility = View.GONE
-        binding.itemSpinner.visibility = View.GONE
-        binding.partSpinner.visibility = View.GONE
-        binding.roomText.visibility = View.GONE
-        binding.itemText.visibility = View.GONE
-        binding.partText.visibility = View.GONE
-        binding.startPauseBtn.visibility = View.GONE
-        binding.cardView.visibility = View.GONE
-    }
-
-    override fun onResume() {
-        super.onResume()
-        stopAll()
-        viewModel.clearItems()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    override fun onTriggerLongPress() {
-        if (!objRfidScanner.loopFlag) {
-            handleBtnScanClick(objRfidScanner)
-        }
-    }
-
-    override fun onTriggerRelease() {
-        objRfidScanner.stopReadTagLoop()
-    }
-
-    override fun onTriggerDown() {
-        handleBtnScanClick(objRfidScanner)
     }
 
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
@@ -340,5 +287,48 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private fun calculateDirection(x1: Double, y1: Double, x2: Double, y2: Double): Double {
         val angle = Math.toDegrees(Math.atan2(y2 - y1, x2 - x1))
         return if (angle < 0) angle + 360 else angle
+    }
+
+    override fun onPause() {
+        super.onPause()
+        objRfidScanner.stopReadTagLoop()
+        scannedTags.clear()
+        tagInfoMap.clear()
+    }
+
+    fun stopAll() {
+        binding.roomSpinner.visibility = View.GONE
+        binding.itemSpinner.visibility = View.GONE
+        binding.partSpinner.visibility = View.GONE
+        binding.roomText.visibility = View.GONE
+        binding.itemText.visibility = View.GONE
+        binding.partText.visibility = View.GONE
+        binding.startPauseBtn.visibility = View.GONE
+        binding.cardView.visibility = View.GONE
+    }
+
+    override fun onResume() {
+        super.onResume()
+        stopAll()
+        viewModel.clearItems()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onTriggerLongPress() {
+        if (!objRfidScanner.loopFlag) {
+            handleBtnScanClick(objRfidScanner)
+        }
+    }
+
+    override fun onTriggerRelease() {
+        objRfidScanner.stopReadTagLoop()
+    }
+
+    override fun onTriggerDown() {
+        handleBtnScanClick(objRfidScanner)
     }
 }

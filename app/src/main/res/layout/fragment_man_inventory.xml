@@ -71,8 +71,10 @@
             android:text="Scan"
             android:backgroundTint="@color/ganyu_dark"
             android:textColor="@android:color/white"
-            android:visibility="gone"
-            app:elevation="4dp" />
+            app:elevation="4dp"
+            android:visibility="visible" />
+
+
 
         <Button
             android:id="@+id/btnSendToBackend"
@@ -82,7 +84,8 @@
             android:text="Submit Inventory"
             android:backgroundTint="@color/ganyu_dark"
             android:textColor="@android:color/white"
-            app:elevation="4dp" />
+            app:elevation="4dp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout
