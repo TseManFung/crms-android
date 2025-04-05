@@ -28,6 +28,7 @@ class LoginRepository(val dataSource: LoginDataSource) {
     }
 
     suspend fun login(username: String, password: String): Result<LoginResponse> {
+
         // handle login
         val result = dataSource.login(removeDomain(username), password)
 

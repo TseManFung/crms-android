@@ -4,10 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import android.util.Patterns
+import androidx.lifecycle.viewModelScope
 import com.crms.crmsAndroid.data.LoginRepository
 import com.crms.crmsAndroid.data.Result
 
 import com.crms.crmsAndroid.R
+import kotlinx.coroutines.launch
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
 
@@ -18,6 +20,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     val loginResult: LiveData<LoginResult> = _loginResult
 
     fun login(username: String, password: String) {
+        viewModelScope.launch {
         // can be launched in a separate asynchronous job
         val result = loginRepository.login(username, password)
 
@@ -26,7 +29,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
                 LoginResult(success = LoggedInUserView(displayName = result.data.lastName +" " + result.data.firstName))
         } else {
             _loginResult.value = LoginResult(error = R.string.login_failed)
-        }
+        }}
     }
 
     fun loginDataChanged(username: String, password: String) {
