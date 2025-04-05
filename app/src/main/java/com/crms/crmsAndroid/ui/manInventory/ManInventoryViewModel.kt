@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.repository.CampusRepository
 import com.crms.crmsAndroid.api.repository.ManualInventoryRepository
 import com.crms.crmsAndroid.api.repository.RoomRepository
@@ -33,16 +35,18 @@ class ManInventoryViewModel : ViewModel() {
     private val manualInventoryRepo = ManualInventoryRepository()
     private val _manualInventoryResult = MutableLiveData<Result<ManualInventoryResponse>>()
     val manualInventoryResult: LiveData<Result<ManualInventoryResponse>> = _manualInventoryResult
-    // Hardcoded token
-    private val hardcodedToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMzAxMDQ1NzciLCJhY2Nlc3NMZXZlbCI6MTAwLCJpYXQiOjE3NDM4MDI5OTcsImV4cCI6MTc0NDgwMjk5N30.2_YenK__fFXbz6a5Cjt5C3FcO1oG6c1CViqhFNFIIGs"
+
+    lateinit var sharedViewModel: SharedViewModel
+    private val token: String get() = sharedViewModel.token
 
     init {
-        fetchCampuses()
+
+
     }
 
     fun fetchCampuses() {
         viewModelScope.launch {
-            val result = repository.getCampuses(hardcodedToken)
+            val result = repository.getCampuses(token)
             result.onSuccess { campuses ->
                 Log.d("ViewModel", "Fetched ${campuses.size} campuses")
                 _campuses.value = campuses
@@ -55,7 +59,7 @@ class ManInventoryViewModel : ViewModel() {
 
     fun fetchRooms(campusID: Int) {
         viewModelScope.launch {
-            val result = roomRepository.getRooms(hardcodedToken, campusID)
+            val result = roomRepository.getRooms(token, campusID)
             result.onSuccess { rooms ->
                 Log.d("ViewModel", "API Response Rooms: $rooms") // 添加此行
                 _rooms.value = rooms
@@ -69,7 +73,7 @@ class ManInventoryViewModel : ViewModel() {
     fun sendManualInventory(rfidList: List<String>, roomId: Int) {
         viewModelScope.launch {
             val result = manualInventoryRepo.manualInventory(
-                token = hardcodedToken,
+                token = token,
                 manualInventoryLists = rfidList,
                 roomID = roomId
             )

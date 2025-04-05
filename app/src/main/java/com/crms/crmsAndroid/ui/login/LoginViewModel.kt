@@ -9,6 +9,7 @@ import com.crms.crmsAndroid.data.LoginRepository
 import com.crms.crmsAndroid.data.Result
 
 import com.crms.crmsAndroid.R
+import com.crms.crmsAndroid.SharedViewModel
 import kotlinx.coroutines.launch
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
@@ -63,6 +64,6 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 
     // A placeholder password validation check
     private fun isPasswordValid(password: String): Boolean {
-        return password.length > 8
+        return true
     }
 }

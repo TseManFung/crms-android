@@ -10,9 +10,11 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.R
+import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryResponse
@@ -43,14 +45,17 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentManInventoryBinding.inflate(inflater, container, false)
+        mainActivity = requireActivity() as MainActivity
+        objRfidScanner = mainActivity.objRfidScanner
+        val sharedViewModel = ViewModelProvider(mainActivity).get(SharedViewModel::class.java)
+        viewModel.sharedViewModel = sharedViewModel
         setupUI()
         setupObservers()
+        viewModel.fetchCampuses()
         return binding.root
     }
 
     private fun setupUI() {
-        mainActivity = requireActivity() as MainActivity
-        objRfidScanner = mainActivity.objRfidScanner
         showScanButton()
         // Initialize ListView
         listAdapter = CustomAdapter()

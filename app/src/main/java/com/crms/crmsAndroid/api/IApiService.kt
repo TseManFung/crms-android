@@ -31,7 +31,7 @@ import retrofit2.http.POST
 
 interface IApiService {
     //xd
-    @POST("login")
+    @POST("loginbypw")
     suspend fun login(@Body request: LoginByPwRequest): Response<LoginResponse>
 
     @POST("getcampus")
