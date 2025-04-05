@@ -1,5 +1,6 @@
 package com.crms.crmsAndroid
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -8,6 +9,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -21,6 +23,7 @@ import com.crms.crmsAndroid.databinding.ActivityMainBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
+import com.crms.crmsAndroid.ui.login.LoginFragment
 import com.google.android.material.navigation.NavigationView
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.google.android.material.snackbar.Snackbar
@@ -72,6 +75,7 @@ class MainActivity : AppCompatActivity() {
         val navView: NavigationView = binding.navView
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
+
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_manInventory,
@@ -88,6 +92,32 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+
+
+        sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id == R.id.nav_login) {
+                supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                invalidateOptionsMenu() // Refresh the options menu to hide the settings icon
+            } else {
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                invalidateOptionsMenu() // Refresh the options menu to show the settings icon
+            }
+        }
+
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        if (navController.currentDestination?.id == R.id.nav_login) {
+            menu.findItem(R.id.action_settings)?.isVisible = false
+            menu.findItem(R.id.action_logout)?.isVisible = false
+        } else {
+            menu.findItem(R.id.action_settings)?.isVisible = true
+            menu.findItem(R.id.action_logout)?.isVisible = true
+        }
+        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -154,10 +184,18 @@ class MainActivity : AppCompatActivity() {
                 findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.action_settings)
                 true
             }
+            R.id.action_logout -> {
+                handleLogout()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    // 9 DO BY DANTEH
+    private fun handleLogout() {
+        sharedViewModel.logout()
+        navController.navigate(R.id.nav_login)
+    }
+
 
 }
