@@ -95,17 +95,14 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         // Set up buttons
         binding.btnSearch.setOnClickListener {
             handleBtnScanClick(objRfidScanner)
-            binding.btnSearch.visibility = View.GONE
-            binding.linearLayoutStopClear.visibility = View.VISIBLE
-            binding.btnSendToBackend.visibility = View.VISIBLE
         }
         binding.btnStop.setOnClickListener {
             if (binding.btnStop.text == "Stop") {
                 objRfidScanner.stopReadTagLoop()
-                sendDataToBackend()
                 binding.btnStop.text = "Clear"
             } else {
                 clearAllData()
+                binding.btnSendToBackend.visibility = View.GONE // Hide btnSendToBackend
             }
         }
 
@@ -195,10 +192,13 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 }
             }
             binding.linearLayoutStopClear.visibility = View.VISIBLE
+            binding.btnSendToBackend.visibility = View.VISIBLE // Show btnSendToBackend
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
         }
     }
+
+
 
     private fun sendDataToBackend() {
         val rfidList = scannedTags.toList()
@@ -294,7 +294,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.cardViewList.visibility = View.GONE
         binding.linearLayoutStopClear.visibility = View.GONE
         binding.btnStop.text = "Stop"
-        showScanButton()
+        binding.btnSendToBackend.visibility = View.GONE // Hide btnSendToBackend
     }
 
 
