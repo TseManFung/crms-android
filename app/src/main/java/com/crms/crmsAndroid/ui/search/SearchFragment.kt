@@ -39,7 +39,6 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private lateinit var campusAdapter: ArrayAdapter<String>
     private lateinit var roomAdapter: ArrayAdapter<String>
     private lateinit var deviceAdapter: ArrayAdapter<String>
-    private lateinit var partAdapter: ArrayAdapter<String>
     private lateinit var listAdapter: ArrayAdapter<String>
     private val items = mutableListOf<String>()
     private val scannedTags = mutableSetOf<String>()
@@ -48,6 +47,8 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private lateinit var objRfidScanner: rfidScanner
     private var startStatus = false
     private lateinit var compassManager: CompassManager
+
+    private var selectedItemRFIDs: List<String>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,10 +85,7 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         deviceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.itemSpinner.adapter = deviceAdapter
 
-        // Initialize Part Spinner
-        partAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
-        partAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.partSpinner.adapter = partAdapter
+
 
         // Campus Spinner selection listener
         binding.campusSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -116,20 +114,19 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         // Device Spinner selection listener
         binding.itemSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                // Handle device selection
+                val selectedDevice = viewModel.devices.value?.get(position)
+                selectedItemRFIDs = selectedDevice?.deviceRFID?.map { it.RFID ?: "" }
+
+                Log.d("SearchFragment", "Selected Item RFIDs: $selectedItemRFIDs")
+
+                binding.startPauseBtn.visibility = View.VISIBLE
+                binding.cardView.visibility = View.VISIBLE
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // Part Spinner selection listener
-        binding.partSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                // Handle part selection
-            }
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
 
         binding.startPauseBtn.setOnClickListener {
             if (!startStatus) {
@@ -196,19 +193,21 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         if (roomNames.isNotEmpty()) {
             binding.roomSpinner.setSelection(0)
-            binding.roomSpinner.visibility = View.VISIBLE // 确保房间下拉菜单可见
-            binding.roomText.visibility = View.VISIBLE // 确保房间文本可见
+            binding.roomSpinner.visibility = View.VISIBLE
+            binding.roomText.visibility = View.VISIBLE
         }
     }
 
     private fun updateDeviceSpinner(devices: List<GetItemResponse.Devices>) {
-        val deviceNames = devices.map { it.deviceName ?: "Unknown" }
+        val deviceNames = devices.map { "${it.deviceID}: ${it.deviceName}" }
         deviceAdapter.clear()
         deviceAdapter.addAll(deviceNames)
         deviceAdapter.notifyDataSetChanged()
 
         if (deviceNames.isNotEmpty()) {
             binding.itemSpinner.setSelection(0)
+            binding.itemSpinner.visibility = View.VISIBLE
+            binding.itemText.visibility = View.VISIBLE
         }
     }
 
@@ -255,14 +254,19 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 val message =
                     """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
 
-                if (!scannedTags.contains(currentTid)) {
-                    scannedTags.add(currentTid)
-                    tagInfoMap[currentTid] = message
-                    viewModel.addItem(message)
-                    controlProgressBar(tag.rssi)
+
+                if (selectedItemRFIDs?.contains(tag.epc) == true) {
+                    if (!scannedTags.contains(currentTid)) {
+                        scannedTags.add(currentTid)
+                        tagInfoMap[currentTid] = message
+                        viewModel.addItem(message)
+                        controlProgressBar(tag.rssi)
+                    } else {
+                        viewModel.updateItem(currentTid, message)
+                        controlProgressBar(tag.rssi)
+                    }
                 } else {
-                    viewModel.updateItem(currentTid, message)
-                    controlProgressBar(tag.rssi)
+                    appendTextToList("未找到项目")
                 }
             }
         } catch (e: Exception) {
@@ -299,10 +303,8 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     fun stopAll() {
         binding.roomSpinner.visibility = View.GONE
         binding.itemSpinner.visibility = View.GONE
-        binding.partSpinner.visibility = View.GONE
         binding.roomText.visibility = View.GONE
         binding.itemText.visibility = View.GONE
-        binding.partText.visibility = View.GONE
         binding.startPauseBtn.visibility = View.GONE
         binding.cardView.visibility = View.GONE
     }
