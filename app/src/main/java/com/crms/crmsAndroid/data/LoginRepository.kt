@@ -1,6 +1,6 @@
 package com.crms.crmsAndroid.data
 
-import com.crms.crmsAndroid.api.requestResponse.LoggedInUser
+import com.crms.crmsAndroid.api.requestResponse.login.LoginResponse
 
 /**
  * Class that requests authentication and user information from the remote data source and
@@ -10,7 +10,7 @@ import com.crms.crmsAndroid.api.requestResponse.LoggedInUser
 class LoginRepository(val dataSource: LoginDataSource) {
 
     // in-memory cache of the loggedInUser object
-    var user: LoggedInUser? = null
+    var user: LoginResponse? = null
         private set
 
     val isLoggedIn: Boolean
@@ -27,7 +27,7 @@ class LoginRepository(val dataSource: LoginDataSource) {
         dataSource.logout()
     }
 
-    fun login(username: String, password: String): Result<LoggedInUser> {
+    suspend fun login(username: String, password: String): Result<LoginResponse> {
         // handle login
         val result = dataSource.login(removeDomain(username), password)
 
@@ -46,7 +46,7 @@ class LoginRepository(val dataSource: LoginDataSource) {
         }
     }
 
-    private fun setLoggedInUser(loggedInUser: LoggedInUser) {
+    private fun setLoggedInUser(loggedInUser: LoginResponse) {
         this.user = loggedInUser
         // If user credentials will be cached in local storage, it is recommended it be encrypted
         // @see https://developer.android.com/training/articles/keystore

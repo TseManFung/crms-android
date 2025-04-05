@@ -23,6 +23,8 @@ import com.crms.crmsAndroid.api.requestResponse.item.GetItemRequest
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemResponse
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryRequest
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryResponse
+import com.crms.crmsAndroid.api.requestResponse.login.LoginByPwRequest
+import com.crms.crmsAndroid.api.requestResponse.login.LoginResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -30,7 +32,7 @@ import retrofit2.http.POST
 interface IApiService {
     //xd
     @POST("login")
-    suspend fun login(@Body request: LoginRequest): Response<LoggedInUser>
+    suspend fun login(@Body request: LoginByPwRequest): Response<LoginResponse>
 
     @POST("getcampus")
     suspend fun getCampus(@Body request: GetCampusRequest): Response<GetCampusResponse>

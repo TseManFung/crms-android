@@ -1,7 +1,6 @@
 package com.crms.crmsAndroid
 
 import androidx.lifecycle.ViewModel
-import com.crms.crmsAndroid.api.requestResponse.LoggedInUser
 import com.crms.crmsAndroid.data.LoginDataSource
 import com.crms.crmsAndroid.data.LoginRepository
 
@@ -10,7 +9,6 @@ class SharedViewModel : ViewModel() {
     val loginRepository: LoginRepository = LoginRepository(LoginDataSource())
 
     val token:String get() = loginRepository?.user?.token ?: ""
-    val displayName:String get() = loginRepository?.user?.displayName ?: ""
 
 
 }
