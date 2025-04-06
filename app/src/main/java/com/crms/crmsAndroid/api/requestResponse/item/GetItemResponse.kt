@@ -1,7 +1,7 @@
 package com.crms.crmsAndroid.api.requestResponse.item
 
 import com.crms.crmsAndroid.api.requestResponse.Response
-import org.threeten.bp.LocalDate
+
 import java.math.BigDecimal
 
 data class GetItemResponse(
