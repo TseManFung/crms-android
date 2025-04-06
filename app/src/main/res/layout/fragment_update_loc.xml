@@ -5,18 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
     android:padding="16dp"
-    android:background="@color/ganyu_light"
-    >
+    android:background="@color/ganyu_light">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose the Campus:"
-        android:textSize="24sp"
+        android:text="Choose Campus:"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:textColor="@color/ganyu_dark" />
 
     <Spinner
@@ -24,15 +22,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/ganyu_primary"
-        />
+        android:layout_marginBottom="16dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose the Room:"
-        android:textSize="24sp"
+        android:text="Choose Room:"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:textColor="@color/ganyu_dark" />
 
     <Spinner
@@ -40,38 +38,53 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/ganyu_primary"
-        />
+        android:layout_marginBottom="16dp"/>
 
     <Button
+        android:id="@+id/btnScan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="10dp"
-        android:text="Start to Search"
+        android:text="Start Scanning"
         android:backgroundTint="@color/ganyu_dark"
         android:textColor="@android:color/white"
         app:elevation="4dp"
-        android:id="@+id/btnScan"/>
+        android:layout_marginBottom="8dp"/>
 
     <Button
+        android:id="@+id/btnStop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pause"
+        android:text="Stop"
         android:backgroundTint="@color/ganyu_silver"
         android:textColor="@android:color/white"
         app:elevation="4dp"
-        android:id="@+id/btnStop"/>
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"/>
 
-    <Spinner
-        android:id="@+id/spnBank"
+    <Button
+        android:id="@+id/btnUpdateLocation"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="Update Location"
+        android:backgroundTint="@color/ganyu_primary"
+        android:textColor="@android:color/white"
+        app:elevation="4dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"/>
 
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Scanned Items:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/ganyu_dark"/>
 
     <ListView
+        android:id="@+id/lvMain"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/lvMain"/>
-
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@color/ganyu_primary"
+        android:dividerHeight="1dp"/>
 </LinearLayout>
