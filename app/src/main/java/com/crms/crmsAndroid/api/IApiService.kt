@@ -25,8 +25,8 @@ import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryRequest
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryResponse
 import com.crms.crmsAndroid.api.requestResponse.login.LoginByPwRequest
 import com.crms.crmsAndroid.api.requestResponse.login.LoginResponse
-import com.crms.crmsAndroid.api.requestResponse.login.RenewTokenRequest
-import com.crms.crmsAndroid.api.requestResponse.login.RenewTokenResponse
+import com.fyp.crms_backend.dto.item.updateLocationByRFIDRequest
+import com.fyp.crms_backend.dto.item.updateLocationByRFIDResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -47,9 +47,6 @@ interface IApiService {
 
     @POST("getitems")
     suspend fun getItems(@Body request: GetItemRequest): Response<GetItemResponse>
-
-    @POST("renewtoken")
-    suspend fun renewToken(@Body request: RenewTokenRequest): Response<RenewTokenResponse>
 
 
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.repository.CampusRepository
 import com.crms.crmsAndroid.api.repository.DeviceRepository
 import com.crms.crmsAndroid.api.repository.RoomRepository
@@ -17,6 +18,9 @@ class SearchViewModel : ViewModel() {
     private val campusRepository = CampusRepository()
     private val roomRepository = RoomRepository()
     private val deviceRepository = DeviceRepository()
+
+    lateinit var sharedViewModel: SharedViewModel
+    private val token: String get() = sharedViewModel.token
 
     private val _campuses = MutableLiveData<List<GetCampusResponse.Campus>>()
     val campuses: LiveData<List<GetCampusResponse.Campus>> = _campuses
