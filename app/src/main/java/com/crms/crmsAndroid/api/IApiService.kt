@@ -17,6 +17,8 @@ package com.crms.crmsAndroid.api
 import com.crms.crmsAndroid.api.requestResponse.*
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomRequest
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
+import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomRequest
+import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusRequest
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemRequest
@@ -50,4 +52,7 @@ interface IApiService {
 
     @POST("updateItemLocation")
     suspend fun updateItemLocation(@Body request:updateLocationByRFIDRequest):Response<updateLocationByRFIDResponse>
+
+    @POST("newroom")
+    suspend fun newRoom(@Body request: NewRoomRequest): Response<NewRoomResponse>
 }

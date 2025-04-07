@@ -84,7 +84,7 @@ class ManInventoryViewModel : ViewModel() {
     fun addItem(item: String) {
         val currentItems = _items.value.orEmpty().toMutableList()
         currentItems.add(item)
-        _items.value = currentItems // 更新 LiveData
+        _items.value = currentItems
         Log.d("ViewModel", "Added item: $item, Total: ${currentItems.size}")
     }
 
