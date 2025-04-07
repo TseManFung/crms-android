@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.R
+import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemResponse
@@ -56,14 +57,16 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
+        mainActivity = requireActivity() as MainActivity
+        objRfidScanner = mainActivity.objRfidScanner
+        val sharedViewModel = ViewModelProvider(mainActivity).get(SharedViewModel::class.java)
+        viewModel.sharedViewModel = sharedViewModel
         setupUI()
         setupObservers()
         return binding.root
     }
 
     private fun setupUI() {
-        mainActivity = requireActivity() as MainActivity
-        objRfidScanner = mainActivity.objRfidScanner
         compassManager = CompassManager(requireContext())
 
         // Initialize ListView
@@ -266,7 +269,7 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                         controlProgressBar(tag.rssi)
                     }
                 } else {
-                    appendTextToList("未找到项目")
+                    appendTextToList("Cant find device")
                 }
             }
         } catch (e: Exception) {

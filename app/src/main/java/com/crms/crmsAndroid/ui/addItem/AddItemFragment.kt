@@ -14,7 +14,6 @@ import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.databinding.FragmentAddItemBinding
 import android.widget.Spinner
 
-// HAVE SCROLL BAR IN LAYOUT NO NEED WORRY OVERFLOW PROBLEMS
 class AddItemFragment : Fragment() {
 
     private var _binding: FragmentAddItemBinding? = null

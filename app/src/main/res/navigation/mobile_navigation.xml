@@ -51,7 +51,7 @@
     <fragment
         android:id="@+id/nav_login"
         android:name="com.crms.crmsAndroid.ui.login.LoginFragment"
-        android:label="Login"
+        android:label="CAMS"
         tools:layout="@layout/fragment_login" />
     <fragment
         android:id="@+id/searchItem"
