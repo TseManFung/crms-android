@@ -1,8 +1,8 @@
 package com.crms.crmsAndroid.api.repository
 
 import com.crms.crmsAndroid.api.RetrofitClient
-import com.fyp.crms_backend.dto.item.updateLocationByRFIDRequest
-import com.fyp.crms_backend.dto.item.updateLocationByRFIDResponse
+import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDRequest
+import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDResponse
 
 class updateLocationRepository {
     suspend fun updateLocation(

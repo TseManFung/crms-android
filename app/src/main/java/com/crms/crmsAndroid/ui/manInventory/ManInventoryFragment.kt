@@ -232,23 +232,23 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         val itemsWithStatus = response.manualInventoryLists.map { item ->
             when {
                 item.preState == 'A' && item.afterState == 'A' ->
-                    "✅ ${item.deviceName} (${item.RFID}) - 正常" to R.color.green_state
+                    "✅ ${item.deviceName} (${item.rfid}) - 正常" to R.color.green_state
                 item.preState == 'B' && item.afterState == 'A' ->
-                    "🔄 ${item.deviceName} (${item.RFID}) - 已归还" to R.color.green_state
+                    "🔄 ${item.deviceName} (${item.rfid}) - 已归还" to R.color.green_state
                 item.preState == 'A' && item.afterState == 'C' ->
-                    "❌ ${item.deviceName} (${item.RFID}) - 未找到" to R.color.gray_state
+                    "❌ ${item.deviceName} (${item.rfid}) - 未找到" to R.color.gray_state
                 item.preState == 'B' && item.afterState == 'B' ->
-                    "⚠️ ${item.deviceName} (${item.RFID}) - 借出中" to R.color.yellow_state
+                    "⚠️ ${item.deviceName} (${item.rfid}) - 借出中" to R.color.yellow_state
                 else ->
-                    "❓ ${item.deviceName} (${item.RFID}) - 状态未知" to R.color.gray_state
+                    "❓ ${item.deviceName} (${item.rfid}) - 状态未知" to R.color.gray_state
             }
         }
 
         val sortedItems = itemsWithStatus.sortedWith(compareBy {
             when (it.second) {
-                R.color.green_state -> 0
+                R.color.green_state -> 2
                 R.color.gray_state -> 1
-                else -> 2
+                else -> 0
             }
         })
 
@@ -319,6 +319,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     override fun onResume() {
         super.onResume()
         viewModel.clearItems()
+
     }
 
     override fun onDestroyView() {
