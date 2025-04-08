@@ -59,17 +59,4 @@ class LoginDataSource {
         }
     }
 
-    suspend fun renewToken(refreshToken: String): Result<RenewTokenResponse> {
-        try {
-            val request = RenewTokenRequest(refreshToken)
-            val response = RetrofitClient.instance.renewToken(request)
-
-            val user = response.body()
-                ?: return Result.Error(IOException("Error renewing token"))
-
-            return Result.Success(user)
-        } catch (e: Throwable) {
-            return Result.Error(IOException("Error renewing token", e))
-        }
-    }
 }
