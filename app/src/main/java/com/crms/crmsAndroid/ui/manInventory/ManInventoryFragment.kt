@@ -29,6 +29,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private val binding get() = _binding!!
     private val viewModel: ManInventoryViewModel by viewModels()
     private  var roomID:Int?=null
+    private var sendToBackend:Boolean = false
 
 
     private lateinit var listAdapter: CustomAdapter
@@ -122,6 +123,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     // Set up buttons
         binding.btnSearch.setOnClickListener {
+
             handleBtnScanClick(objRfidScanner)
         }
         binding.btnStop.setOnClickListener {
@@ -131,6 +133,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             } else {
                 clearAllData()
                 binding.btnSendToBackend.visibility = View.GONE // Hide btnSendToBackend
+                sendToBackend = true
             }
         }
 
@@ -210,6 +213,10 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
         try {
+            if(sendToBackend == true){
+                clearAllData()
+                sendToBackend = false
+            }
             rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
                 val currentTid = tag.tid
                 val currentRFID = tag.epc
@@ -359,6 +366,10 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     override fun onTriggerLongPress() {
+        if(sendToBackend == true){
+            clearAllData()
+            sendToBackend = false
+        }
         if (!objRfidScanner.loopFlag) {
             handleBtnScanClick(objRfidScanner)
         }
@@ -369,6 +380,10 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     override fun onTriggerDown() {
+        if(sendToBackend == true){
+            clearAllData()
+            sendToBackend = false
+        }
         handleBtnScanClick(objRfidScanner)
     }
 

@@ -74,18 +74,14 @@
             app:elevation="4dp"
             android:visibility="visible" />
 
-
-
         <Button
-            android:id="@+id/btnSendToBackend"
+            android:id="@+id/btnStop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Submit Inventory"
+            android:text="Stop"
             android:backgroundTint="@color/ganyu_dark"
             android:textColor="@android:color/white"
-            app:elevation="4dp"
-            android:visibility="gone" />
+            app:elevation="4dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -100,24 +96,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/btnStop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Stop"
-            android:backgroundTint="@color/ganyu_dark"
-            android:textColor="@android:color/white"
-            app:elevation="4dp" />
+
 
         <Button
-            android:id="@+id/btnCancel"
+            android:id="@+id/btnSendToBackend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Cancel"
+            android:text="Submit Inventory"
             android:backgroundTint="@color/ganyu_dark"
             android:textColor="@android:color/white"
-            app:elevation="4dp" />
+            app:elevation="4dp"
+            android:visibility="gone" />
+
+
     </LinearLayout>
 
     <androidx.cardview.widget.CardView

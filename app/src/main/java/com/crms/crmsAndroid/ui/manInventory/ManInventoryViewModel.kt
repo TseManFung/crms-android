@@ -33,16 +33,13 @@ class ManInventoryViewModel : ViewModel() {
     val rooms: LiveData<List<GetRoomResponse.SingleRoomResponse>> = _rooms
     //Manual Inventory Data
     private val manualInventoryRepo = ManualInventoryRepository()
-    private val _manualInventoryResult = MutableLiveData<Result<ManualInventoryResponse>>()
-    val manualInventoryResult: LiveData<Result<ManualInventoryResponse>> = _manualInventoryResult
+    private var _manualInventoryResult:MutableLiveData<Result<ManualInventoryResponse>> = MutableLiveData<Result<ManualInventoryResponse>>()
+    val manualInventoryResult: LiveData<Result<ManualInventoryResponse>> get() = _manualInventoryResult
 
     lateinit var sharedViewModel: SharedViewModel
     private val token: String get() = sharedViewModel.token
 
-    init {
 
-
-    }
 
     fun fetchCampuses() {
         viewModelScope.launch {
@@ -99,6 +96,10 @@ class ManInventoryViewModel : ViewModel() {
 
     fun clearItems() {
         _items.value = emptyList()
+    }
+
+    fun resetResult() {
+        _manualInventoryResult =MutableLiveData<Result<ManualInventoryResponse>>()
     }
 
 }
