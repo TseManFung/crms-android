@@ -1,6 +1,7 @@
 package com.crms.crmsAndroid.data
 
 import com.crms.crmsAndroid.api.requestResponse.login.LoginResponse
+import java.io.IOException
 
 /**
  * Class that requests authentication and user information from the remote data source and
@@ -24,8 +25,20 @@ class LoginRepository(val dataSource: LoginDataSource) {
 
     fun logout() {
         user = null
-        dataSource.logout()
     }
+
+    suspend fun renewToken() {
+        val refreshToken = user?.refreshToken ?: throw IllegalStateException("No refresh token")
+        val result = dataSource.renewToken(refreshToken)
+
+        if (result is Result.Success) {
+            user?.token = result.data.token
+        } else {
+            logout() // 刷新失敗時登出
+            throw IOException("Token renewal failed")
+        }
+    }
+
 
     suspend fun login(username: String, password: String): Result<LoginResponse> {
 
