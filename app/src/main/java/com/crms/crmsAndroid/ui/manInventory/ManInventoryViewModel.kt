@@ -8,10 +8,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.repository.CampusRepository
+import com.crms.crmsAndroid.api.repository.DeviceRepository
 import com.crms.crmsAndroid.api.repository.ManualInventoryRepository
 import com.crms.crmsAndroid.api.repository.RoomRepository
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDResponse
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryResponse
 import kotlinx.coroutines.launch
 
@@ -19,6 +21,9 @@ class ManInventoryViewModel : ViewModel() {
     //scanned data
     private val _items = MutableLiveData<List<String>>()
     val items: LiveData<List<String>> get() = _items
+
+    private val deviceRepository = DeviceRepository()
+
 
     private val repository = CampusRepository()
     //Campus data
@@ -67,6 +72,10 @@ class ManInventoryViewModel : ViewModel() {
         }
     }
 
+    suspend fun getDeviceByRFID(rfid: String): Result<GetItemByRFIDResponse> {
+        return deviceRepository.getItemByRFID(token, rfid)
+    }
+
     fun sendManualInventory(rfidList: List<String>, roomId: Int) {
         viewModelScope.launch {
             val result = manualInventoryRepo.manualInventory(
@@ -80,9 +89,10 @@ class ManInventoryViewModel : ViewModel() {
 
     fun addItem(item: String) {
         val currentItems = _items.value.orEmpty().toMutableList()
-        currentItems.add(item)
-        _items.value = currentItems
-        Log.d("ViewModel", "Added item: $item, Total: ${currentItems.size}")
+        if (!currentItems.contains(item)) {
+            currentItems.add(item)
+            _items.value = currentItems
+        }
     }
 
     fun updateItem(tid: String, item: String) {
