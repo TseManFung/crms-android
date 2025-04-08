@@ -220,19 +220,26 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
                 val currentTid = tag.tid
                 val currentRFID = tag.epc
-                val message =
-                    """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
-                Log.d("Fragment", message)
                 if (!scannedTags.contains(currentTid)) {
                     scannedTags.add(currentTid)
-                    tagInfoMap[currentTid] = message
-                    viewModel.addItem(message)
-                } else {
-                    viewModel.updateItem(currentTid, message)
+
+                    // 立即调用API获取设备信息
+                    lifecycleScope.launch {
+                        val result = viewModel.getDeviceByRFID(currentRFID)
+                        result.onSuccess { response ->
+                            val displayText = "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
+                            tagInfoMap[currentTid] = displayText
+                            viewModel.addItem(displayText)
+                        }.onFailure { exception ->
+                            val fallbackText = "RFID: $currentRFID (API Error)"
+                            tagInfoMap[currentTid] = fallbackText
+                            viewModel.addItem(fallbackText)
+                        }
+                    }
                 }
             }
             binding.linearLayoutStopClear.visibility = View.VISIBLE
-            binding.btnSendToBackend.visibility = View.VISIBLE // Show btnSendToBackend
+            binding.btnSendToBackend.visibility = View.VISIBLE
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
         }
