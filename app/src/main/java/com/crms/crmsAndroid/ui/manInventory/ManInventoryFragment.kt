@@ -231,9 +231,9 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                             tagInfoMap[currentTid] = displayText
                             viewModel.addItem(displayText)
                         }.onFailure { exception ->
-                            val fallbackText = "RFID: $currentTid (API Error)"
-                            tagInfoMap[currentTid] = fallbackText
-                            viewModel.addItem(fallbackText)
+//                            val fallbackText = "RFID: $currentTid (API Error)"
+//                            tagInfoMap[currentTid] = fallbackText
+//                            viewModel.addItem(fallbackText)
                         }
                     }
                 }
