@@ -20,6 +20,8 @@ import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomRequest
 import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusRequest
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDRequest
+import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDResponse
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemRequest
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemResponse
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryRequest
@@ -59,4 +61,7 @@ interface IApiService {
 
     @POST("newroom")
     suspend fun newRoom(@Body request: NewRoomRequest): Response<NewRoomResponse>
+
+    @POST("getitembyrfid")
+    suspend fun getItemByRFID(@Body request:GetItemByRFIDRequest): Response<GetItemByRFIDResponse>
 }
