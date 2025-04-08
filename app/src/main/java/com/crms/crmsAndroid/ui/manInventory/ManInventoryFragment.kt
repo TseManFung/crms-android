@@ -32,7 +32,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private var sendToBackend:Boolean = false
 
 
-    private lateinit var listAdapter: CustomAdapter
+    private lateinit var listAdapter:ArrayAdapter<String>
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
     private lateinit var campusAdapter: ArrayAdapter<String>
@@ -62,15 +62,9 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private fun setupUI() {
         showScanButton()
         // Initialize ListView
-        listAdapter = CustomAdapter()
+        listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
         binding.lvSearchResult.adapter = listAdapter
-        binding.lvSearchResult.adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_list_item_1,
-            items
-        ).apply {
-            setNotifyOnChange(true)
-        }
+
 
         // Initialize Campus Spinner
         campusAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
