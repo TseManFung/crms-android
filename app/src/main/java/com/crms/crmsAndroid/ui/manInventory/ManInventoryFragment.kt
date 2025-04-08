@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private var _binding: FragmentManInventoryBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: ManInventoryViewModel by viewModels()
+            private lateinit var viewModel: ManInventoryViewModel
     private  var roomID:Int?=null
     private var sendToBackend:Boolean = false
 
@@ -50,6 +50,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         _binding = FragmentManInventoryBinding.inflate(inflater, container, false)
         mainActivity = requireActivity() as MainActivity
         objRfidScanner = mainActivity.objRfidScanner
+        viewModel = ViewModelProvider(this).get(ManInventoryViewModel::class.java)
         val sharedViewModel = ViewModelProvider(mainActivity).get(SharedViewModel::class.java)
         viewModel.sharedViewModel = sharedViewModel
         setupUI()
@@ -151,7 +152,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.btnSendToBackend.visibility = if (scannedTags.isNotEmpty()) View.VISIBLE else View.GONE
     }
     private fun setupObservers() {
-        viewModel.items.observe(viewLifecycleOwner) { newItems ->
+        viewModel.itemss.observe(viewLifecycleOwner) { newItems ->
             Log.d("Fragment", "Observed items change. Size: ${newItems.size}")
             items.clear()
             items.addAll(newItems)
