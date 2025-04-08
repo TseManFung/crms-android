@@ -156,7 +156,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             items.clear()
             items.addAll(newItems)
             listAdapter.notifyDataSetChanged()
-            binding.cardViewList.visibility = if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.lvSearchResult.visibility = if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
         }
 
         viewModel.campuses.observe(viewLifecycleOwner) { campuses ->
@@ -302,7 +302,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             view.setBackgroundResource(sortedItems[position].second)
         }
 
-        binding.cardViewList.visibility = View.VISIBLE
+        binding.lvSearchResult.visibility = View.VISIBLE
     }
 
     private inner class CustomAdapter : ArrayAdapter<Triple<String, Char, Int>>(
@@ -326,7 +326,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         binding.btnStop.text = "Stop"
         binding.linearLayoutStopClear.visibility = View.GONE
-        binding.cardViewList.visibility = View.GONE
+        binding.lvSearchResult.visibility = View.GONE
 
         roomAdapter.clear()
         roomAdapter.notifyDataSetChanged()
@@ -341,7 +341,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         tagInfoMap.clear()
         viewModel.clearItems()
         items.clear()
-        binding.cardViewList.visibility = View.GONE
+        binding.lvSearchResult.visibility = View.GONE
         binding.linearLayoutStopClear.visibility = View.GONE
         binding.btnStop.text = "Stop"
         binding.btnSendToBackend.visibility = View.GONE // Hide btnSendToBackend
@@ -382,8 +382,12 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
     }
 
+
+
     override fun onTriggerRelease() {
         objRfidScanner.stopReadTagLoop()
+        updateButtonStates()
+
     }
 
     override fun onTriggerDown() {
@@ -392,6 +396,8 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             sendToBackend = false
         }
         handleBtnScanClick(objRfidScanner)
+        updateButtonStates()
+
     }
 
     private fun StopScanning() {
