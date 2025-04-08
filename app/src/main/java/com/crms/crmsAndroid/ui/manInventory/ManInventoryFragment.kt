@@ -223,7 +223,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 val currentRFID = tag.epc
                 if (!scannedTags.contains(currentTid)) {
                     scannedTags.add(currentTid)
-
+                    //test
                     // 立即调用API获取设备信息
                     lifecycleScope.launch {
                         val result = viewModel.getDeviceByRFID(currentTid)
