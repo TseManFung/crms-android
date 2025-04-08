@@ -213,36 +213,30 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
 
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
-        try {
-            if(sendToBackend == true){
-                clearAllData()
-                sendToBackend = false
-            }
-            rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
-                val currentTid = tag.tid
-                val currentRFID = tag.epc
-                if (!scannedTags.contains(currentTid)) {
-                    scannedTags.add(currentTid)
+        rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
+            val currentTid = tag.tid
+            if (!scannedTags.contains(currentTid)) {
+                scannedTags.add(currentTid)
+                activity?.runOnUiThread {
+                    items.add("Scanning $currentTid...") // Immediate feedback
+                    listAdapter.notifyDataSetChanged()
+                }
 
-                    // 立即调用API获取设备信息
-                    lifecycleScope.launch {
-                        val result = viewModel.getDeviceByRFID(currentTid)
-                        result.onSuccess { response ->
-                            val displayText = "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
-                            tagInfoMap[currentTid] = displayText
-                            viewModel.addItem(displayText)
-                        }.onFailure { exception ->
-//                            val fallbackText = "RFID: $currentTid (API Error)"
-//                            tagInfoMap[currentTid] = fallbackText
-//                            viewModel.addItem(fallbackText)
+                lifecycleScope.launch {
+                    val result = viewModel.getDeviceByRFID(currentTid)
+                    result.onSuccess { response ->
+                        val displayText = "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
+                        tagInfoMap[currentTid] = displayText
+                        activity?.runOnUiThread {
+                            val index = items.indexOfFirst { it.contains(currentTid) }
+                            if (index != -1) {
+                                items[index] = displayText
+                                listAdapter.notifyDataSetChanged()
+                            }
                         }
                     }
                 }
             }
-            binding.linearLayoutStopClear.visibility = View.VISIBLE
-            binding.btnSendToBackend.visibility = View.VISIBLE
-        } catch (e: Exception) {
-            appendTextToList("Error: ${e.message}")
         }
     }
 

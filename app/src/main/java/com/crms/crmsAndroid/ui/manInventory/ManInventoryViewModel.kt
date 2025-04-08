@@ -89,9 +89,10 @@ class ManInventoryViewModel : ViewModel() {
 
 
     fun addItem(item: String) {
-        if (!(_items.value?.contains(item)!!)) {
-        _items.value?.add(item)
-        _items.value = _items.value // Trigger LiveData update
+        val currentList = _items.value?.toMutableList() ?: mutableListOf()
+        if (!currentList.contains(item)) {
+            currentList.add(item)
+            _items.postValue(currentList)
         }
     }
 
