@@ -7,24 +7,28 @@
     android:background="@color/ganyu_light"
     tools:context=".ui.manInventory.ManInventoryFragment"
     android:orientation="vertical"
+
     >
 
     <TextView
         android:id="@+id/tvCampus"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
+        android:textAlignment="center"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:text="Choose the Campus:"
+
+        android:textColor="@color/ganyu_dark"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="16dp"
-        android:textColor="@color/ganyu_dark"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
         android:id="@+id/spnCampus"
         android:layout_width="match_parent"
+        android:textAlignment="center"
         android:layout_height="wrap_content"
         android:background="@color/ganyu_primary"
         android:layout_marginBottom="16dp"
@@ -34,7 +38,8 @@
 
     <TextView
         android:id="@+id/tvRoom"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
+        android:textAlignment="center"
         android:layout_height="wrap_content"
         android:text="Choose the Room:"
         android:textSize="20sp"
@@ -48,6 +53,7 @@
     <Spinner
         android:id="@+id/spnRoom"
         android:layout_width="match_parent"
+        android:textAlignment="center"
         android:layout_height="wrap_content"
         android:background="@color/ganyu_primary"
         android:layout_marginBottom="16dp"
@@ -57,38 +63,41 @@
 
     <LinearLayout
         android:id="@+id/linearLayoutButtons"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="10dp"
+        android:gravity="center_horizontal|center_vertical"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/spnRoom"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/spnRoom">
 
         <Button
             android:id="@+id/btnSearch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Scan"
             android:backgroundTint="@color/ganyu_dark"
+            android:text="Scan"
             android:textColor="@android:color/white"
-            app:elevation="4dp"
-            android:visibility="visible" />
+            android:visibility="visible"
+            app:elevation="4dp" />
 
         <Button
             android:id="@+id/btnStop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Stop"
             android:backgroundTint="@color/ganyu_dark"
+            android:text="Stop"
             android:textColor="@android:color/white"
             app:elevation="4dp" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayoutStopClear"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
+        android:textAlignment="center"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="10dp"
