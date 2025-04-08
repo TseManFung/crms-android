@@ -97,6 +97,20 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
+        //Room Spinner selection listener
+        binding.spnRoom.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                resetAllData()
+                val selectedRooms = viewModel.rooms.value?.get(position)
+                Log.d("Fragment", "Selected Campus ID: ${selectedRooms?.room}")
+//                selectedRooms?.room?.let { room ->
+//                    room.fetchRooms(room)
+//                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
         // Set up buttons
         binding.btnSearch.setOnClickListener {
             handleBtnScanClick(objRfidScanner)
