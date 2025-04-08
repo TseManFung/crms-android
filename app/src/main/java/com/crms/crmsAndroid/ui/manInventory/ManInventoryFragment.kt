@@ -89,6 +89,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.spnCampus.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 resetAllData()
+                StopScanning()
                 val selectedCampus = viewModel.campuses.value?.get(position)
                 Log.d("Fragment", "Selected Campus ID: ${selectedCampus?.campusId}")
                 selectedCampus?.campusId?.let { campusId ->
@@ -102,14 +103,15 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         //Rooms Spinner selection listener
         binding.spnRoom.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                resetAllData()
+                clearAllData()
+                StopScanning()
                 roomID = viewModel.rooms.value?.get(position)?.room ?: 0
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        updateButtonStates()
+
 
 
 
@@ -318,10 +320,13 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         objRfidScanner.stopReadTagLoop()
     }
 
+
+
     private fun clearAllData() {
         scannedTags.clear()
         tagInfoMap.clear()
         viewModel.clearItems()
+        items.clear()
         binding.cardViewList.visibility = View.GONE
         binding.linearLayoutStopClear.visibility = View.GONE
         binding.btnStop.text = "Stop"
@@ -365,5 +370,9 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     override fun onTriggerDown() {
         handleBtnScanClick(objRfidScanner)
+    }
+
+    private fun StopScanning() {
+        objRfidScanner.stopReadTagLoop()
     }
 }
