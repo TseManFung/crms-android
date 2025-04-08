@@ -1,8 +1,6 @@
 package com.crms.crmsAndroid.api.repository
 
 import com.crms.crmsAndroid.api.RetrofitClient
-import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDRequest
-import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDResponse
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemRequest
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemResponse
 
@@ -22,21 +20,5 @@ class DeviceRepository {
         }
     }
 
-    suspend fun getItemByRFID(token: String, rfid: String): Result<GetItemByRFIDResponse> {
 
-        return try {
-            val request = GetItemByRFIDRequest(token = token, RFID = rfid)
-            val response = RetrofitClient.instance.getItemByRFID(request)
-
-            if (response.isSuccessful) {
-                Result.success(response.body() ?: throw Exception("Empty response body"))
-            } else {
-                Result.failure(Exception("API error: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-
-
-    }
 }
