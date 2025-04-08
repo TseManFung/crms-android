@@ -28,6 +28,8 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private var _binding: FragmentManInventoryBinding? = null
     private val binding get() = _binding!!
     private val viewModel: ManInventoryViewModel by viewModels()
+    private  var roomID:Int?=null
+
 
     private lateinit var listAdapter: CustomAdapter
     private lateinit var mainActivity: MainActivity
@@ -97,9 +99,26 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
+        //Rooms Spinner selection listener
+        binding.spnRoom.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                resetAllData()
+                roomID = viewModel.rooms.value?.get(position)?.room ?: 0
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        updateButtonStates()
 
 
-        // Set up buttons
+
+
+
+
+
+
+    // Set up buttons
         binding.btnSearch.setOnClickListener {
             handleBtnScanClick(objRfidScanner)
         }
@@ -120,6 +139,11 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.btnSearch.visibility = View.VISIBLE
         binding.linearLayoutStopClear.visibility = View.GONE
         binding.btnSendToBackend.visibility = View.GONE
+    }
+
+    private fun updateButtonStates() {
+        binding.linearLayoutStopClear.visibility = if (objRfidScanner.loopFlag) View.VISIBLE else View.GONE
+        binding.btnSendToBackend.visibility = if (scannedTags.isNotEmpty()) View.VISIBLE else View.GONE
     }
     private fun setupObservers() {
         viewModel.items.observe(viewLifecycleOwner) { newItems ->
@@ -210,13 +234,13 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private fun sendDataToBackend() {
         val rfidList = scannedTags.toList()
         val selectedRoomPosition = binding.spnRoom.selectedItemPosition
-        val roomId = viewModel.rooms.value?.get(selectedRoomPosition)?.room ?: run {
+        roomID = viewModel.rooms.value?.get(selectedRoomPosition)?.room ?: run {
             Toast.makeText(context, "Please select a room", Toast.LENGTH_SHORT).show()
             return
         }
 
         lifecycleScope.launch {
-            viewModel.sendManualInventory(rfidList, roomId)
+            viewModel.sendManualInventory(rfidList, roomID!!)
         }
     }
 
