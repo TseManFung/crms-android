@@ -274,15 +274,15 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         val itemsWithStatus = response.manualInventoryLists.map { item ->
             when {
                 item.preState == 'A' && item.afterState == 'A' ->
-                    "✅ ${item.deviceName} (${item.rfid}) - 正常" to R.color.green_state
+                    "✅ ${item.deviceName} (${item.rfid}) - Normal" to R.color.green_state
                 item.preState == 'B' && item.afterState == 'A' ->
-                    "🔄 ${item.deviceName} (${item.rfid}) - 已归还" to R.color.green_state
+                    "🔄 ${item.deviceName} (${item.rfid}) - Returned" to R.color.green_state
                 item.preState == 'A' && item.afterState == 'C' ->
-                    "❌ ${item.deviceName} (${item.rfid}) - 未找到" to R.color.gray_state
+                    "❌ ${item.deviceName} (${item.rfid}) - Cant Find" to R.color.gray_state
                 item.preState == 'B' && item.afterState == 'B' ->
-                    "⚠️ ${item.deviceName} (${item.rfid}) - 借出中" to R.color.yellow_state
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Loading" to R.color.yellow_state
                 else ->
-                    "❓ ${item.deviceName} (${item.rfid}) - 状态未知" to R.color.gray_state
+                    "❓ ${item.deviceName} (${item.rfid}) - Unknown" to R.color.gray_state
             }
         }
 
