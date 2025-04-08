@@ -62,6 +62,6 @@ interface IApiService {
     @POST("newroom")
     suspend fun newRoom(@Body request: NewRoomRequest): Response<NewRoomResponse>
 
-    @POST("getItemByRFID")
+    @POST("getitembyrfid")
     suspend fun getItemByRFID(@Body request: GetItemByRFIDRequest): Response<GetItemByRFIDResponse>
 }

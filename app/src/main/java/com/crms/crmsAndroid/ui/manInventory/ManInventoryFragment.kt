@@ -225,13 +225,13 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
                     // 立即调用API获取设备信息
                     lifecycleScope.launch {
-                        val result = viewModel.getDeviceByRFID(currentRFID)
+                        val result = viewModel.getDeviceByRFID(currentTid)
                         result.onSuccess { response ->
                             val displayText = "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
                             tagInfoMap[currentTid] = displayText
                             viewModel.addItem(displayText)
                         }.onFailure { exception ->
-                            val fallbackText = "RFID: $currentRFID (API Error)"
+                            val fallbackText = "RFID: $currentTid (API Error)"
                             tagInfoMap[currentTid] = fallbackText
                             viewModel.addItem(fallbackText)
                         }
