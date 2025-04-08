@@ -152,8 +152,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.btnSendToBackend.visibility = if (scannedTags.isNotEmpty()) View.VISIBLE else View.GONE
     }
     private fun setupObservers() {
-        viewModel.itemss.observe(viewLifecycleOwner) { newItems ->
-            Log.d("Fragment", "Observed items change. Size: ${newItems.size}")
+        viewModel.items.observe(viewLifecycleOwner) { newItems ->
             items.clear()
             items.addAll(newItems)
             listAdapter.notifyDataSetChanged()

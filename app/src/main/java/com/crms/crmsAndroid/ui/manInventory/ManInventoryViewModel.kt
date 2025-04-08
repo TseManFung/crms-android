@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 class ManInventoryViewModel : ViewModel() {
     //scanned data
     private val _items = MutableLiveData<MutableList<String>>(mutableListOf())
-    val itemss: LiveData<MutableList<String>> get() = _items
+    val items: LiveData<MutableList<String>> get() = _items
 
     private val deviceRepository = DeviceRepository()
 
@@ -89,24 +89,25 @@ class ManInventoryViewModel : ViewModel() {
 
 
     fun addItem(item: String) {
-        val currentList = _items.value?.toMutableList() ?: mutableListOf()
-        if (!currentList.contains(item)) {
-            currentList.add(item)
-            _items.postValue(currentList)
-        }
+        _items.value?.add(item)
+        _items.value = _items.value
     }
 
-    fun updateItem(tid: String, item: String) {
-        val currentItems = _items.value.orEmpty().toMutableList()
-        val index = currentItems.indexOfFirst { it.contains(tid) }
-        if (index != -1) {
-            currentItems[index] = item
+    fun updateItem(tid: String, newMessage: String) {
+        _items.value?.let { currentItems ->
+            for (i in currentItems.indices) {
+                if (currentItems[i].contains(tid)) {
+                    currentItems[i] = newMessage
+                    break
+                }
+            }
             _items.value = currentItems
         }
     }
 
     fun clearItems() {
         _items.value?.clear()
+        _items.postValue(_items.value)
     }
 
 
