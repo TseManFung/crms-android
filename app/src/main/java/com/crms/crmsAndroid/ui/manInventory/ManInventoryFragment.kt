@@ -132,7 +132,6 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             }
         }
 
-        appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
     }
 
     private fun showScanButton() {
@@ -152,6 +151,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             listAdapter.notifyDataSetChanged()
             binding.lvSearchResult.visibility = if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
         }
+
 
         viewModel.campuses.observe(viewLifecycleOwner) { campuses ->
             campuses?.let {
@@ -224,6 +224,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                             val displayText = "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
                             tagInfoMap[currentTid] = displayText
                             viewModel.addItem(displayText)
+                            listAdapter.notifyDataSetChanged()
                         }.onFailure { exception ->
 //                            val fallbackText = "RFID: $currentTid (API Error)"
 //                            tagInfoMap[currentTid] = fallbackText

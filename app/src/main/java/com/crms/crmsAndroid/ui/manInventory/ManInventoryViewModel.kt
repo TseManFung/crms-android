@@ -89,25 +89,24 @@ class ManInventoryViewModel : ViewModel() {
 
 
     fun addItem(item: String) {
-        _items.value?.add(item)
-        _items.value = _items.value
+        val currentList = _items.value?.toMutableList() ?: mutableListOf()
+        if (!currentList.contains(item)) {
+            currentList.add(item)
+            _items.postValue(currentList)
+        }
     }
 
-    fun updateItem(tid: String, newMessage: String) {
-        _items.value?.let { currentItems ->
-            for (i in currentItems.indices) {
-                if (currentItems[i].contains(tid)) {
-                    currentItems[i] = newMessage
-                    break
-                }
-            }
+    fun updateItem(tid: String, item: String) {
+        val currentItems = _items.value.orEmpty().toMutableList()
+        val index = currentItems.indexOfFirst { it.contains(tid) }
+        if (index != -1) {
+            currentItems[index] = item
             _items.value = currentItems
         }
     }
 
     fun clearItems() {
         _items.value?.clear()
-        _items.postValue(_items.value)
     }
 
 
