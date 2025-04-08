@@ -63,6 +63,7 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         viewModel.sharedViewModel = sharedViewModel
         setupUI()
         setupObservers()
+        viewModel.fetchCampuses()
         return binding.root
     }
 

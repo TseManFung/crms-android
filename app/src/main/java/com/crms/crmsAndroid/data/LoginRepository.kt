@@ -27,6 +27,19 @@ class LoginRepository(val dataSource: LoginDataSource) {
         user = null
     }
 
+    suspend fun renewToken() {
+        val refreshToken = user?.refreshToken ?: throw IllegalStateException("No refresh token")
+        val result = dataSource.renewToken(refreshToken)
+
+        if (result is Result.Success) {
+            user?.token = result.data.token
+        } else {
+            logout() // 刷新失敗時登出
+            throw IOException("Token renewal failed")
+        }
+    }
+
+
     suspend fun login(username: String, password: String): Result<LoginResponse> {
 
         // handle login

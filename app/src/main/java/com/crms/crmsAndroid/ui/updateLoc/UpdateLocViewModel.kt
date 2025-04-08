@@ -1,6 +1,5 @@
 package com.crms.crmsAndroid.ui.updateLoc
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,7 +10,7 @@ import com.crms.crmsAndroid.api.repository.RoomRepository
 import com.crms.crmsAndroid.api.repository.updateLocationRepository
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
-import com.fyp.crms_backend.dto.item.updateLocationByRFIDResponse
+import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDResponse
 import kotlinx.coroutines.launch
 
 class UpdateLocViewModel : ViewModel() {

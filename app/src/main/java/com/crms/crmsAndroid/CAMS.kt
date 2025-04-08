@@ -7,7 +7,6 @@ class CAMS : Application() {
     companion object {
         private lateinit var instance: CAMS
 
-        // 提供全局 Context
         fun getAppContext(): Context = instance.applicationContext
     }
 

@@ -12,7 +12,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
-import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
@@ -20,7 +19,7 @@ import com.crms.crmsAndroid.databinding.FragmentUpdateLocBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
-import com.fyp.crms_backend.dto.item.updateLocationByRFIDResponse
+import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDResponse
 import kotlinx.coroutines.launch
 
 class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
