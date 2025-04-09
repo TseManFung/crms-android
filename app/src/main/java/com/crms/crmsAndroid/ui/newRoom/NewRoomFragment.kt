@@ -1,5 +1,6 @@
 package com.crms.crmsAndroid.ui.newRoom
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -67,7 +68,16 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1)
         binding.lvSearchResult.adapter = listAdapter
 
-        // Initialize Campus Spinner
+        // 修改列表点击监听代码
+        binding.lvSearchResult.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+            val selectedItem = listAdapter.getItem(position)
+            selectedItem?.let { // 添加空安全检查
+                showSingleItemConfirmationDialog(it)
+            } ?: run {
+                Toast.makeText(context, "Selected item is invalid", Toast.LENGTH_SHORT).show()
+            }
+        }
+        // Initialize Campus SpinnerSea
         campusAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spnCampus.adapter = campusAdapter
@@ -146,6 +156,8 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
 
         binding.btnClear.setOnClickListener {
+            binding.btnAdd.text = "Start Scanning"
+            stopScanning()
             viewModel.clearItems()
             scannedTags.clear()
             listAdapter.clear()
@@ -296,6 +308,55 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             isScanning = false
             isManualStop = true
         }
+    }
+
+    // 新增方法：显示单个物品的确认对话框
+    // 修改对话框显示方法
+    private fun showSingleItemConfirmationDialog(itemInfo: String) {
+        val tid = extractTidFromItem(itemInfo)
+
+        // 检查TID有效性
+        if (tid.isNullOrEmpty()) {
+            Toast.makeText(context, "Invalid tag format", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 获取房间信息
+        val roomPosition = binding.spnRoom.selectedItemPosition
+        val room = currentRooms.getOrNull(roomPosition)
+
+        // 检查房间选择有效性
+        if (room == null) {
+            Toast.makeText(context, "Please select a valid room first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 检查房间ID有效性
+        val roomId = room.room ?: run {
+            Toast.makeText(context, "Invalid room ID", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 处理可能为空的房间名称
+        val roomName = room.roomName ?: "Unnamed Room"
+
+        // 构建对话框
+        AlertDialog.Builder(requireContext())
+            .setTitle("Confirm Submission")
+            .setMessage("Confirm to submit this item to ${roomName}?\nrfid: $tid")
+            .setPositiveButton("Confirm") { _, _ ->
+                viewModel.submitSingleItem(roomId, tid)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    // 新增方法：从列表项中提取TID
+    private fun extractTidFromItem(item: String): String? {
+        return item.split("\n")
+            .find { it.startsWith("TID:") }
+            ?.substringAfter(":")
+            ?.trim()
     }
 
 }

@@ -35,6 +35,10 @@ class NewRoomViewModel : ViewModel() {
     lateinit var sharedViewModel: SharedViewModel
     private val token: String get() = sharedViewModel.token
 
+    private suspend fun submitItem(roomID: Int, tagId: String): Boolean {
+        return roomRepository.newRoom(token, roomID, tagId).getOrThrow()
+    }
+
     fun fetchCampuses() {
         viewModelScope.launch {
             val result = repository.getCampuses(token)
@@ -87,37 +91,111 @@ class NewRoomViewModel : ViewModel() {
     fun submitData(roomID: Int) {
         viewModelScope.launch {
             val rfids = _items.value ?: emptyList()
+
             if (rfids.isEmpty()) {
                 _submitStatus.value = Pair(false, "Please scan RFID tags first")
                 return@launch
             }
 
             var allSuccess = true
+            val successList = mutableListOf<String>()
             val errorMessages = mutableListOf<String>()
+            var processedCount = 0
 
             rfids.forEach { tagInfo ->
-                val tid = tagInfo.split("\n").find { it.startsWith("TID:") }?.substringAfter(":")?.trim()
-                tid?.let { tagId ->
-                    roomRepository.newRoom(token, roomID, tagId).fold(
+                val tid = extractTidFromItem(tagInfo)
+                if (tid == null) {
+                    errorMessages.add("Invalid tag format: ${tagInfo.take(20)}...")
+                    allSuccess = false
+                    processedCount++
+                    return@forEach
+                }
+
+                try {
+                    val result = roomRepository.newRoom(token, roomID, tid)
+                    result.fold(
                         onSuccess = { success ->
-                            if (!success) {
+                            if (success) {
+                                successList.add(tid)
+                            } else {
+                                errorMessages.add("Tag $tid save failed (server rejected)")
                                 allSuccess = false
-                                errorMessages.add("Tag $tagId save failed (server error)")
                             }
                         },
                         onFailure = { exception ->
+                            errorMessages.add("Tag $tid error: ${exception.message ?: "Unknown network error"}")
                             allSuccess = false
-                            errorMessages.add("Tag $tagId error: ${exception.message ?: "Unknown network error"}")
                         }
+                    )
+                } catch (e: Exception) {
+                    errorMessages.add("Tag $tid processing exception: ${e.message ?: "Unknown error"}")
+                    allSuccess = false
+                } finally {
+                    processedCount++
+                }
+
+                if (processedCount % 5 == 0) {
+                    _submitStatus.postValue(
+                        Pair(
+                            false,
+                            "Processing... ($processedCount/${rfids.size})"
+                        )
                     )
                 }
             }
 
             _submitStatus.value = if (allSuccess) {
-                Pair(true, "All items saved successfully!")
+                val remainingItems = _items.value?.filter { item ->
+                    !successList.any { tid ->
+                        item.contains("TID: $tid")
+                    }
+                } ?: emptyList()
+                _items.postValue(remainingItems)
+
+                Pair(
+                    true,
+                    "Successfully submitted ${successList.size} items!\n" +
+                            "• Room ID: $roomID\n" +
+                            "• Successful tags: ${successList.take(3).joinToString()}${if (successList.size > 3) "..." else ""}"
+                )
             } else {
-                Pair(false, errorMessages.joinToString("\n"))
+                val errorSummary = when {
+                    errorMessages.size == rfids.size -> "All submissions failed"
+                    errorMessages.isNotEmpty() -> "${errorMessages.size} failures"
+                    else -> "Unknown error"
+                }
+
+                Pair(
+                    false,
+                    "Submission completed (partial failures)\n" +
+                            "• Success: ${successList.size}\n" +
+                            "• Failures: ${errorMessages.size}\n" +
+                            "Error details:\n${errorMessages.take(3).joinToString("\n")}${if (errorMessages.size > 3) "\n..." else ""}"
+                )
             }
         }
+    }
+
+    fun submitSingleItem(roomID: Int, tagId: String) {
+        viewModelScope.launch {
+            try {
+                val success = submitItem(roomID, tagId)
+                val message = if (success) {
+                    "Submission successful! TID: $tagId"
+                } else {
+                    "Submission failed: Server error"
+                }
+                _submitStatus.postValue(Pair(success, message))
+            } catch (e: Exception) {
+                _submitStatus.postValue(Pair(false, "Submission failed: ${e.message ?: "Network error"}"))
+            }
+        }
+    }
+
+    private fun extractTidFromItem(item: String): String? {
+        return item.split("\n")
+            .find { it.startsWith("TID:") }
+            ?.substringAfter(":")
+            ?.trim()
     }
 }

@@ -72,7 +72,7 @@ class ErrorInterceptor(private val loginRepository: LoginRepository) : Intercept
                 val newRequest = modifyRequestWithNewToken(originalRequest, newToken)
                 chain.proceed(newRequest)
             } else {
-                throw IOException("Token 刷新失败")
+                throw IOException("Token refresh failed")
             }
         }
     }

@@ -28,17 +28,16 @@ class RoomRepository {
     suspend fun newRoom(token: String, roomID: Int, rfid: String): Result<Boolean> { // 💡 注意返回的是 kotlin.Result
         return try {
             val request = NewRoomRequest(token = token, roomID = roomID, roomRFID = rfid)
-            val response = RetrofitClient.instance.newRoom(request) // 假设已定义该API接口
+            val response = RetrofitClient.instance.newRoom(request)
 
-            // 💡 明确处理响应状态
             if (response.isSuccessful) {
                 val status = response.body()?.status ?: false
-                Result.success(status) // 使用标准库的Result
+                Result.success(status)
             } else {
-                Result.failure(Exception("API错误: HTTP ${response.code()}"))
+                Result.failure(Exception("exist RFID for this room"))
             }
         } catch (e: Exception) {
-            Result.failure(e) // 使用标准库的Result
+            Result.failure(e)
         }
     }
 
