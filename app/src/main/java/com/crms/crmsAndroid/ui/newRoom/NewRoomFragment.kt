@@ -37,7 +37,6 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private lateinit var objRfidScanner: rfidScanner
     private lateinit var campusAdapter: ArrayAdapter<String>
     private lateinit var roomAdapter: ArrayAdapter<String>
-    private val scannedTags = mutableSetOf<String>()
     private var currentCampusId: Int = -1
     private var currentRooms: List<GetRoomResponse.SingleRoomResponse> = emptyList()
     private var isScanning = false
@@ -68,10 +67,10 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1)
         binding.lvSearchResult.adapter = listAdapter
 
-        // 修改列表点击监听代码
+
         binding.lvSearchResult.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
             val selectedItem = listAdapter.getItem(position)
-            selectedItem?.let { // 添加空安全检查
+            selectedItem?.let {
                 showSingleItemConfirmationDialog(it)
             } ?: run {
                 Toast.makeText(context, "Selected item is invalid", Toast.LENGTH_SHORT).show()
@@ -142,24 +141,24 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             viewModel.submitData(roomId)
         }
 
+
         viewModel.submitStatus.observe(viewLifecycleOwner) { (success, message) ->
-            message?.let {
+            message?.takeIf {
+                view?.windowToken != null && isAdded
+            }?.let {
                 if (success) {
                     Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-
-                    viewModel.clearItems()
-                    scannedTags.clear()
                 } else {
                     Toast.makeText(context, it, Toast.LENGTH_LONG).show()
                 }
+                viewModel.resetSubmitStatus()
             }
         }
 
         binding.btnClear.setOnClickListener {
             binding.btnAdd.text = "Start Scanning"
             stopScanning()
-            viewModel.clearItems()
-            scannedTags.clear()
+            viewModel.clearAllData() // 使用新的清理方法
             listAdapter.clear()
             listAdapter.notifyDataSetChanged()
             Toast.makeText(context, "All record deleted", Toast.LENGTH_SHORT).show()
@@ -238,38 +237,39 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
 
     private fun startScanning() {
-
         objRfidScanner.stopReadTagLoop()
-
 
         objRfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
             val currentTid = tag.tid
-            if (!scannedTags.contains(currentTid)) {
-                scannedTags.add(currentTid)
+            if (!viewModel.isTagScannedOrSubmitted(currentTid)) {
+                viewModel.addScannedTag(currentTid)
                 val message = """
                 EPC: ${tag.epc}
                 TID: $currentTid
                 RSSI: ${tag.rssi}
             """.trimIndent()
                 viewModel.addItem(message)
+            } else {
+                Log.d("Fragment", "Skipped duplicate RFID: $currentTid")
             }
         }
     }
 
     private fun stopScanning() {
         objRfidScanner.stopReadTagLoop()
-        scannedTags.clear()
+
     }
 
     override fun onPause() {
         super.onPause()
         objRfidScanner.stopReadTagLoop()
-        scannedTags.clear()
+        viewModel.clearAllData()
+
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.clearItems()
+        viewModel.clearAllData()
     }
 
     override fun onDestroyView() {
@@ -310,37 +310,36 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
     }
 
-    // 新增方法：显示单个物品的确认对话框
-    // 修改对话框显示方法
+
     private fun showSingleItemConfirmationDialog(itemInfo: String) {
         val tid = extractTidFromItem(itemInfo)
 
-        // 检查TID有效性
+
         if (tid.isNullOrEmpty()) {
             Toast.makeText(context, "Invalid tag format", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 获取房间信息
+
         val roomPosition = binding.spnRoom.selectedItemPosition
         val room = currentRooms.getOrNull(roomPosition)
 
-        // 检查房间选择有效性
+
         if (room == null) {
             Toast.makeText(context, "Please select a valid room first", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 检查房间ID有效性
+
         val roomId = room.room ?: run {
             Toast.makeText(context, "Invalid room ID", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 处理可能为空的房间名称
+
         val roomName = room.roomName ?: "Unnamed Room"
 
-        // 构建对话框
+
         AlertDialog.Builder(requireContext())
             .setTitle("Confirm Submission")
             .setMessage("Confirm to submit this item to ${roomName}?\nrfid: $tid")
@@ -351,7 +350,7 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             .show()
     }
 
-    // 新增方法：从列表项中提取TID
+
     private fun extractTidFromItem(item: String): String? {
         return item.split("\n")
             .find { it.startsWith("TID:") }

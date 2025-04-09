@@ -19,6 +19,18 @@ class NewRoomViewModel : ViewModel() {
     val items: LiveData<List<String>> get() = _items
 
     private val repository = CampusRepository()
+    // List of submitted tags
+    private val _scannedTags = mutableSetOf<String>()
+    val submittedTags = mutableSetOf<String>()
+
+    fun isTagScannedOrSubmitted(tid: String): Boolean {
+        return tid in _scannedTags || tid in submittedTags
+    }
+
+    fun addScannedTag(tid: String) {
+        _scannedTags.add(tid)
+    }
+
 
     // Campus data
     private val _campuses = MutableLiveData<List<GetCampusResponse.Campus>>()
@@ -67,9 +79,16 @@ class NewRoomViewModel : ViewModel() {
 
     fun addItem(item: String) {
         val currentItems = _items.value.orEmpty().toMutableList()
-        currentItems.add(item)
-        _items.value = currentItems
-        Log.d("ViewModel", "Added item: $item, Total: ${currentItems.size}")
+        val tid = extractTidFromItem(item)
+
+        // Check if the item is already submitted
+        if (tid != null && !submittedTags.contains(tid)) {
+            currentItems.add(item)
+            _items.value = currentItems
+            Log.d("ViewModel", "Added item: $item, Total: ${currentItems.size}")
+        } else {
+            Log.d("ViewModel", "Skipped already submitted RFID: $tid")
+        }
     }
 
     fun updateItem(tid: String, item: String) {
@@ -85,8 +104,14 @@ class NewRoomViewModel : ViewModel() {
         _items.value = emptyList()
     }
 
+
     private val _submitStatus = MutableLiveData<Pair<Boolean, String?>>()
     val submitStatus: LiveData<Pair<Boolean, String?>> = _submitStatus
+
+    //reset submit status
+    fun resetSubmitStatus() {
+        _submitStatus.value = Pair(false, null) // 通过 MutableLiveData 修改
+    }
 
     fun submitData(roomID: Int) {
         viewModelScope.launch {
@@ -97,17 +122,12 @@ class NewRoomViewModel : ViewModel() {
                 return@launch
             }
 
-            var allSuccess = true
-            val successList = mutableListOf<String>()
             val errorMessages = mutableListOf<String>()
-            var processedCount = 0
 
             rfids.forEach { tagInfo ->
                 val tid = extractTidFromItem(tagInfo)
                 if (tid == null) {
                     errorMessages.add("Invalid tag format: ${tagInfo.take(20)}...")
-                    allSuccess = false
-                    processedCount++
                     return@forEach
                 }
 
@@ -115,79 +135,51 @@ class NewRoomViewModel : ViewModel() {
                     val result = roomRepository.newRoom(token, roomID, tid)
                     result.fold(
                         onSuccess = { success ->
-                            if (success) {
-                                successList.add(tid)
-                            } else {
+                            if (!success) {
                                 errorMessages.add("Tag $tid save failed (server rejected)")
-                                allSuccess = false
                             }
                         },
                         onFailure = { exception ->
                             errorMessages.add("Tag $tid error: ${exception.message ?: "Unknown network error"}")
-                            allSuccess = false
                         }
                     )
                 } catch (e: Exception) {
                     errorMessages.add("Tag $tid processing exception: ${e.message ?: "Unknown error"}")
-                    allSuccess = false
-                } finally {
-                    processedCount++
-                }
-
-                if (processedCount % 5 == 0) {
-                    _submitStatus.postValue(
-                        Pair(
-                            false,
-                            "Processing... ($processedCount/${rfids.size})"
-                        )
-                    )
                 }
             }
 
-            _submitStatus.value = if (allSuccess) {
-                val remainingItems = _items.value?.filter { item ->
-                    !successList.any { tid ->
-                        item.contains("TID: $tid")
-                    }
-                } ?: emptyList()
-                _items.postValue(remainingItems)
-
-                Pair(
-                    true,
-                    "Successfully submitted ${successList.size} items!\n" +
-                            "• Room ID: $roomID\n" +
-                            "• Successful tags: ${successList.take(3).joinToString()}${if (successList.size > 3) "..." else ""}"
-                )
+            val finalMessage = if (errorMessages.isEmpty()) {
+                submittedTags.addAll(_scannedTags)
+                _scannedTags.clear()
+                "Successfully submitted ${rfids.size} tags!"
             } else {
-                val errorSummary = when {
-                    errorMessages.size == rfids.size -> "All submissions failed"
-                    errorMessages.isNotEmpty() -> "${errorMessages.size} failures"
-                    else -> "Unknown error"
-                }
-
-                Pair(
-                    false,
-                    "Submission completed (partial failures)\n" +
-                            "• Success: ${successList.size}\n" +
-                            "• Failures: ${errorMessages.size}\n" +
-                            "Error details:\n${errorMessages.take(3).joinToString("\n")}${if (errorMessages.size > 3) "\n..." else ""}"
-                )
+                "Failed to submit tags:\n${errorMessages.joinToString("\n")}"
             }
+
+            _submitStatus.postValue(
+                Pair(errorMessages.isEmpty(), finalMessage)
+            )
+
+            _items.postValue(emptyList())
         }
     }
 
     fun submitSingleItem(roomID: Int, tagId: String) {
         viewModelScope.launch {
             try {
-                val success = submitItem(roomID, tagId)
-                val message = if (success) {
-                    "Submission successful! TID: $tagId"
-                } else {
-                    "Submission failed: Server error"
+                if (submitItem(roomID, tagId)) {
+
+                    submittedTags.add(tagId)
+                    _scannedTags.remove(tagId)
                 }
-                _submitStatus.postValue(Pair(success, message))
             } catch (e: Exception) {
                 _submitStatus.postValue(Pair(false, "Submission failed: ${e.message ?: "Network error"}"))
+            } finally {
+
+                val remainingItems = _items.value?.filter { item ->
+                    !item.contains("TID: $tagId")
+                } ?: emptyList()
+                _items.postValue(remainingItems)
             }
         }
     }
@@ -198,4 +190,12 @@ class NewRoomViewModel : ViewModel() {
             ?.substringAfter(":")
             ?.trim()
     }
+
+    fun clearAllData() {
+        _scannedTags.clear()
+        submittedTags.clear()
+        _items.value = emptyList()
+    }
+
+
 }
