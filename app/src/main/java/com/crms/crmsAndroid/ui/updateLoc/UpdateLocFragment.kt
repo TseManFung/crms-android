@@ -73,6 +73,7 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         // Set up buttons
         binding.btnScan.setOnClickListener {
             handleBtnScanClick(objRfidScanner)
+
         }
         binding.btnStop.setOnClickListener {
             if (binding.btnStop.text == "Stop") {
@@ -162,21 +163,27 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
         try {
-            rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
-                val currentTid = tag.tid
-                val message =
-                    """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
 
-                if (!scannedTags.contains(currentTid)) {
-                    scannedTags.add(currentTid)
-                    tagInfoMap[currentTid] = message
-                    viewModel.addItem(message)
-                } else {
-                    viewModel.updateItem(currentTid, message)
+            if (!objRfidScanner.loopFlag) {
+                rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
+                    val currentTid = tag.tid
+                    val message =
+                        """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+
+                    if (!scannedTags.contains(currentTid)) {
+                        scannedTags.add(currentTid)
+                        tagInfoMap[currentTid] = message
+                        viewModel.addItem(message)
+                    } else {
+                        viewModel.updateItem(currentTid, message)
+                    }
                 }
+                binding.btnStop.text = "Stop"
+                binding.btnStop.visibility = View.VISIBLE
+
             }
-            binding.btnStop.text = "Stop"
-            binding.btnStop.visibility = View.VISIBLE
+
+
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
         }
@@ -251,17 +258,21 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         objRfidScanner.stopReadTagLoop()
         scannedTags.clear()
         tagInfoMap.clear()
+        clearAllData()
     }
 
     override fun onResume() {
         super.onResume()
         viewModel.clearItems()
+        clearAllData()
+
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
 
     override fun onTriggerLongPress() {
         if (!objRfidScanner.loopFlag) {
@@ -274,6 +285,8 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     override fun onTriggerDown() {
-        handleBtnScanClick(objRfidScanner)
+        if (!objRfidScanner.loopFlag) {
+            handleBtnScanClick(objRfidScanner)
+        }
     }
 }
