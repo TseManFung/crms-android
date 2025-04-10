@@ -12,7 +12,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
-import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
@@ -20,7 +19,7 @@ import com.crms.crmsAndroid.databinding.FragmentUpdateLocBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
-import com.fyp.crms_backend.dto.item.updateLocationByRFIDResponse
+import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDResponse
 import kotlinx.coroutines.launch
 
 class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
@@ -74,6 +73,7 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         // Set up buttons
         binding.btnScan.setOnClickListener {
             handleBtnScanClick(objRfidScanner)
+
         }
         binding.btnStop.setOnClickListener {
             if (binding.btnStop.text == "Stop") {
@@ -163,21 +163,27 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
         try {
-            rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
-                val currentTid = tag.tid
-                val message =
-                    """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
 
-                if (!scannedTags.contains(currentTid)) {
-                    scannedTags.add(currentTid)
-                    tagInfoMap[currentTid] = message
-                    viewModel.addItem(message)
-                } else {
-                    viewModel.updateItem(currentTid, message)
+            if (!objRfidScanner.loopFlag) {
+                rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
+                    val currentTid = tag.tid
+                    val message =
+                        """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+
+                    if (!scannedTags.contains(currentTid)) {
+                        scannedTags.add(currentTid)
+                        tagInfoMap[currentTid] = message
+                        viewModel.addItem(message)
+                    } else {
+                        viewModel.updateItem(currentTid, message)
+                    }
                 }
+                binding.btnStop.text = "Stop"
+                binding.btnStop.visibility = View.VISIBLE
+
             }
-            binding.btnStop.text = "Stop"
-            binding.btnStop.visibility = View.VISIBLE
+
+
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
         }
@@ -252,17 +258,21 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         objRfidScanner.stopReadTagLoop()
         scannedTags.clear()
         tagInfoMap.clear()
+        clearAllData()
     }
 
     override fun onResume() {
         super.onResume()
         viewModel.clearItems()
+        clearAllData()
+
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
 
     override fun onTriggerLongPress() {
         if (!objRfidScanner.loopFlag) {
@@ -275,6 +285,8 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     override fun onTriggerDown() {
-        handleBtnScanClick(objRfidScanner)
+        if (!objRfidScanner.loopFlag) {
+            handleBtnScanClick(objRfidScanner)
+        }
     }
 }

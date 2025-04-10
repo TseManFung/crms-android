@@ -38,7 +38,16 @@ class LoginRepository(val dataSource: LoginDataSource) {
             throw IOException("Token renewal failed")
         }
     }
-
+//    suspend fun renewToken() {
+//        val refreshToken = user?.refreshToken ?: throw IllegalStateException("无刷新 Token")
+//        val result = dataSource.renewToken(refreshToken)
+//        if (result is Result.Success) {
+//            user = user?.copy(token = result.data.token) // 更新 Token
+//        } else {
+//            logout()
+//            throw IOException("Token 刷新失败")
+//        }
+//    }
 
     suspend fun login(username: String, password: String): Result<LoginResponse> {
 
@@ -65,4 +74,6 @@ class LoginRepository(val dataSource: LoginDataSource) {
         // If user credentials will be cached in local storage, it is recommended it be encrypted
         // @see https://developer.android.com/training/articles/keystore
     }
+
+
 }

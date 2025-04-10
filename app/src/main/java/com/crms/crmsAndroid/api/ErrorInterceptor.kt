@@ -72,7 +72,7 @@ class ErrorInterceptor(private val loginRepository: LoginRepository) : Intercept
                 val newRequest = modifyRequestWithNewToken(originalRequest, newToken)
                 chain.proceed(newRequest)
             } else {
-                throw IOException("Token 刷新失败")
+                throw IOException("Token refresh failed")
             }
         }
     }
@@ -112,6 +112,8 @@ class ErrorInterceptor(private val loginRepository: LoginRepository) : Intercept
     ): Response {
         return when (ErrorCode.toErrorCode(errorCode)) {
             ErrorCode.E04 -> handleTokenExpired(chain, currentRequest)
+            // more Error handle in here
+
             else -> {
                 // 构建错误 JSON
                 val errorResponse = ErrorResponse(errorCode, description)

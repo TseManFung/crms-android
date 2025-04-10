@@ -27,9 +27,12 @@ import kotlinx.coroutines.launch
 class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private var _binding: FragmentManInventoryBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: ManInventoryViewModel by viewModels()
+            private lateinit var viewModel: ManInventoryViewModel
+    private  var roomID:Int?=null
+    private var sendToBackend:Boolean = false
 
-    private lateinit var listAdapter: CustomAdapter
+
+    private lateinit var listAdapter:ArrayAdapter<String>
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
     private lateinit var campusAdapter: ArrayAdapter<String>
@@ -47,6 +50,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         _binding = FragmentManInventoryBinding.inflate(inflater, container, false)
         mainActivity = requireActivity() as MainActivity
         objRfidScanner = mainActivity.objRfidScanner
+        viewModel = ViewModelProvider(this).get(ManInventoryViewModel::class.java)
         val sharedViewModel = ViewModelProvider(mainActivity).get(SharedViewModel::class.java)
         viewModel.sharedViewModel = sharedViewModel
         setupUI()
@@ -58,15 +62,9 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private fun setupUI() {
         showScanButton()
         // Initialize ListView
-        listAdapter = CustomAdapter()
+        listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
         binding.lvSearchResult.adapter = listAdapter
-        binding.lvSearchResult.adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_list_item_1,
-            items
-        ).apply {
-            setNotifyOnChange(true)
-        }
+
 
         // Initialize Campus Spinner
         campusAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
@@ -87,6 +85,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.spnCampus.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 resetAllData()
+                StopScanning()
                 val selectedCampus = viewModel.campuses.value?.get(position)
                 Log.d("Fragment", "Selected Campus ID: ${selectedCampus?.campusId}")
                 selectedCampus?.campusId?.let { campusId ->
@@ -97,8 +96,29 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // Set up buttons
+        //Rooms Spinner selection listener
+        binding.spnRoom.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                clearAllData()
+                StopScanning()
+                roomID = viewModel.rooms.value?.get(position)?.room ?: 0
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+
+
+
+
+
+
+
+
+
+    // Set up buttons
         binding.btnSearch.setOnClickListener {
+
             handleBtnScanClick(objRfidScanner)
         }
         binding.btnStop.setOnClickListener {
@@ -108,10 +128,10 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             } else {
                 clearAllData()
                 binding.btnSendToBackend.visibility = View.GONE // Hide btnSendToBackend
+                sendToBackend = true
             }
         }
 
-        appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
     }
 
     private fun showScanButton() {
@@ -119,14 +139,19 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.linearLayoutStopClear.visibility = View.GONE
         binding.btnSendToBackend.visibility = View.GONE
     }
+
+    private fun updateButtonStates() {
+        binding.linearLayoutStopClear.visibility = if (objRfidScanner.loopFlag) View.VISIBLE else View.GONE
+        binding.btnSendToBackend.visibility = if (scannedTags.isNotEmpty()) View.VISIBLE else View.GONE
+    }
     private fun setupObservers() {
         viewModel.items.observe(viewLifecycleOwner) { newItems ->
-            Log.d("Fragment", "Observed items change. Size: ${newItems.size}")
             items.clear()
             items.addAll(newItems)
             listAdapter.notifyDataSetChanged()
-            binding.cardViewList.visibility = if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.lvSearchResult.visibility = if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
         }
+
 
         viewModel.campuses.observe(viewLifecycleOwner) { campuses ->
             campuses?.let {
@@ -182,22 +207,34 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
         try {
+            if(sendToBackend == true){
+                clearAllData()
+                sendToBackend = false
+            }
             rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
                 val currentTid = tag.tid
                 val currentRFID = tag.epc
-                val message =
-                    """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
-                Log.d("Fragment", message)
                 if (!scannedTags.contains(currentTid)) {
                     scannedTags.add(currentTid)
-                    tagInfoMap[currentTid] = message
-                    viewModel.addItem(message)
-                } else {
-                    viewModel.updateItem(currentTid, message)
+                    //test
+                    // 立即调用API获取设备信息
+                    lifecycleScope.launch {
+                        val result = viewModel.getDeviceByRFID(currentTid)
+                        result.onSuccess { response ->
+                            val displayText = "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
+                            tagInfoMap[currentTid] = displayText
+                            viewModel.addItem(displayText)
+                            listAdapter.notifyDataSetChanged()
+                        }.onFailure { exception ->
+//                            val fallbackText = "RFID: $currentTid (API Error)"
+//                            tagInfoMap[currentTid] = fallbackText
+//                            viewModel.addItem(fallbackText)
+                        }
+                    }
                 }
             }
             binding.linearLayoutStopClear.visibility = View.VISIBLE
-            binding.btnSendToBackend.visibility = View.VISIBLE // Show btnSendToBackend
+            binding.btnSendToBackend.visibility = View.VISIBLE
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
         }
@@ -208,13 +245,13 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private fun sendDataToBackend() {
         val rfidList = scannedTags.toList()
         val selectedRoomPosition = binding.spnRoom.selectedItemPosition
-        val roomId = viewModel.rooms.value?.get(selectedRoomPosition)?.room ?: run {
+        roomID = viewModel.rooms.value?.get(selectedRoomPosition)?.room ?: run {
             Toast.makeText(context, "Please select a room", Toast.LENGTH_SHORT).show()
             return
         }
 
         lifecycleScope.launch {
-            viewModel.sendManualInventory(rfidList, roomId)
+            viewModel.sendManualInventory(rfidList, roomID!!)
         }
     }
 
@@ -232,23 +269,23 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         val itemsWithStatus = response.manualInventoryLists.map { item ->
             when {
                 item.preState == 'A' && item.afterState == 'A' ->
-                    "✅ ${item.deviceName} (${item.RFID}) - 正常" to R.color.green_state
+                    "✅ ${item.deviceName} (${item.rfid}) - Normal" to R.color.green_state
                 item.preState == 'B' && item.afterState == 'A' ->
-                    "🔄 ${item.deviceName} (${item.RFID}) - 已归还" to R.color.green_state
+                    "🔄 ${item.deviceName} (${item.rfid}) - Returned" to R.color.green_state
                 item.preState == 'A' && item.afterState == 'C' ->
-                    "❌ ${item.deviceName} (${item.RFID}) - 未找到" to R.color.gray_state
+                    "❌ ${item.deviceName} (${item.rfid}) - Cant Find" to R.color.gray_state
                 item.preState == 'B' && item.afterState == 'B' ->
-                    "⚠️ ${item.deviceName} (${item.RFID}) - 借出中" to R.color.yellow_state
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Loading" to R.color.yellow_state
                 else ->
-                    "❓ ${item.deviceName} (${item.RFID}) - 状态未知" to R.color.gray_state
+                    "❓ ${item.deviceName} (${item.rfid}) - Unknown" to R.color.gray_state
             }
         }
 
         val sortedItems = itemsWithStatus.sortedWith(compareBy {
             when (it.second) {
-                R.color.green_state -> 0
+                R.color.green_state -> 2
                 R.color.gray_state -> 1
-                else -> 2
+                else -> 0
             }
         })
 
@@ -260,7 +297,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             view.setBackgroundResource(sortedItems[position].second)
         }
 
-        binding.cardViewList.visibility = View.VISIBLE
+        binding.lvSearchResult.visibility = View.VISIBLE
     }
 
     private inner class CustomAdapter : ArrayAdapter<Triple<String, Char, Int>>(
@@ -284,7 +321,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         binding.btnStop.text = "Stop"
         binding.linearLayoutStopClear.visibility = View.GONE
-        binding.cardViewList.visibility = View.GONE
+        binding.lvSearchResult.visibility = View.GONE
 
         roomAdapter.clear()
         roomAdapter.notifyDataSetChanged()
@@ -292,11 +329,14 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         objRfidScanner.stopReadTagLoop()
     }
 
+
+
     private fun clearAllData() {
         scannedTags.clear()
         tagInfoMap.clear()
         viewModel.clearItems()
-        binding.cardViewList.visibility = View.GONE
+        items.clear()
+        binding.lvSearchResult.visibility = View.GONE
         binding.linearLayoutStopClear.visibility = View.GONE
         binding.btnStop.text = "Stop"
         binding.btnSendToBackend.visibility = View.GONE // Hide btnSendToBackend
@@ -319,6 +359,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     override fun onResume() {
         super.onResume()
         viewModel.clearItems()
+
     }
 
     override fun onDestroyView() {
@@ -327,16 +368,34 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     override fun onTriggerLongPress() {
+        if(sendToBackend == true){
+            clearAllData()
+            sendToBackend = false
+        }
         if (!objRfidScanner.loopFlag) {
             handleBtnScanClick(objRfidScanner)
         }
     }
 
+
+
     override fun onTriggerRelease() {
         objRfidScanner.stopReadTagLoop()
+        updateButtonStates()
+
     }
 
     override fun onTriggerDown() {
+        if(sendToBackend == true){
+            clearAllData()
+            sendToBackend = false
+        }
         handleBtnScanClick(objRfidScanner)
+        updateButtonStates()
+
+    }
+
+    private fun StopScanning() {
+        objRfidScanner.stopReadTagLoop()
     }
 }

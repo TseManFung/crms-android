@@ -37,15 +37,14 @@ class SearchViewModel : ViewModel() {
     private val _items = MutableLiveData<List<String>>()
     val items: LiveData<List<String>> get() = _items
 
-    private val hardcodedToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMzAxMDQ1NzciLCJhY2Nlc3NMZXZlbCI6MTAwLCJpYXQiOjE3NDM4MDI5OTcsImV4cCI6MTc0NDgwMjk5N30.2_YenK__fFXbz6a5Cjt5C3FcO1oG6c1CViqhFNFIIGs"
 
     init {
-        fetchCampuses()
+
     }
 
     fun fetchCampuses() {
         viewModelScope.launch {
-            val result = campusRepository.getCampuses(hardcodedToken)
+            val result = campusRepository.getCampuses(token)
             result.onSuccess { campuses ->
                 _campuses.value = campuses
             }.onFailure { exception ->
@@ -56,7 +55,7 @@ class SearchViewModel : ViewModel() {
 
     fun fetchRooms(campusID: Int) {
         viewModelScope.launch {
-            val result = roomRepository.getRooms(hardcodedToken, campusID)
+            val result = roomRepository.getRooms(token, campusID)
             result.onSuccess { rooms ->
                 _rooms.value = rooms
             }.onFailure { exception ->
@@ -67,7 +66,7 @@ class SearchViewModel : ViewModel() {
 
     fun fetchDevices(roomID: Int) {
         viewModelScope.launch {
-            val result = deviceRepository.getItems(hardcodedToken, roomID, emptyList())
+            val result = deviceRepository.getItems(token, roomID, emptyList())
             result.onSuccess { devices ->
                 _devices.value = devices
             }.onFailure { exception ->

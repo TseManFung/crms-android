@@ -14,19 +14,22 @@ package com.crms.crmsAndroid.api
 //    fun getCampus(@Body request: GetCampusRequest): Call<GetCampusResponse>
 //}
 
-import com.crms.crmsAndroid.api.requestResponse.*
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomRequest
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
+import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomRequest
+import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusRequest
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDRequest
+import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDResponse
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemRequest
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemResponse
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryRequest
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryResponse
 import com.crms.crmsAndroid.api.requestResponse.login.LoginByPwRequest
 import com.crms.crmsAndroid.api.requestResponse.login.LoginResponse
-import com.fyp.crms_backend.dto.item.updateLocationByRFIDRequest
-import com.fyp.crms_backend.dto.item.updateLocationByRFIDResponse
+import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDRequest
+import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDResponse
 import com.crms.crmsAndroid.api.requestResponse.login.RenewTokenRequest
 import com.crms.crmsAndroid.api.requestResponse.login.RenewTokenResponse
 import retrofit2.Response
@@ -55,4 +58,10 @@ interface IApiService {
 
     @POST("updateItemLocation")
     suspend fun updateItemLocation(@Body request:updateLocationByRFIDRequest):Response<updateLocationByRFIDResponse>
+
+    @POST("newroom")
+    suspend fun newRoom(@Body request: NewRoomRequest): Response<NewRoomResponse>
+
+    @POST("getitembyrfid")
+    suspend fun getItemByRFID(@Body request: GetItemByRFIDRequest): Response<GetItemByRFIDResponse>
 }
