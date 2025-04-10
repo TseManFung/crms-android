@@ -1,10 +1,12 @@
 package com.crms.crmsAndroid.scanner
 
+import androidx.fragment.app.Fragment
 import com.rscja.deviceapi.RFIDWithUHFUART
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.IUHF.*
 import java.util.ArrayList
 import com.rscja.deviceapi.entity.UHFTAGInfo
+import com.rscja.deviceapi.interfaces.IUHFLocationCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -281,8 +283,8 @@ class rfidScanner {
      */
     fun stopReadTagLoop() {
         if (this.loopFlag) {
-            this.loopFlag = false
             this.scanner.stopInventory()
+            this.loopFlag = false
         }
 
     }
@@ -453,5 +455,31 @@ class rfidScanner {
         return writeTag(Bank_RESERVED, p)
     }
 
+    fun startLocateTag(fragment: Fragment, bank: Int, data: String, locationCallback: IUHFLocationCallback) {
+        if (loopFlag){
+            throw RuntimeException("Loop already started")
+        }
+        val (ptr, cnt) = makePtrAndCnt(bank)
+        this.scanner.startLocation(fragment.requireContext(),data,bank,ptr,locationCallback)
+        this.loopFlag = true
+
+//        lifecycleScope.launch {
+//            while (loopFlag) {
+//                val tag = scanner.readTagFromBuffer()
+//                if (tag != null) {
+//                    onTagRead(tag)
+//                } else {
+//                    delay(100)
+//                }
+//            }
+//        }
+    }
+
+    fun stopLocateTag(){
+        if (this.loopFlag) {
+            this.scanner.stopLocation()
+            this.loopFlag = false
+        }
+    }
 
 }

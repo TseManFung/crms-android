@@ -198,5 +198,14 @@ class MainActivity : AppCompatActivity() {
         navController.navigate(R.id.nav_login)
     }
 
+    override fun onPause() {
+        super.onPause()
+        objRfidScanner.stopReadTagLoop()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        objRfidScanner.setMode()
+    }
 
 }

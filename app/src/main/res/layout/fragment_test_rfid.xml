@@ -11,20 +11,47 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <Button
+    <SeekBar
+        android:id="@+id/seekSensitivity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="scan"
-        android:id="@+id/btnScan"/>
-    <Button
+        android:layout_marginTop="8dp"
+        android:max="100"
+        android:progress="30" />
+
+    <SeekBar
+        android:id="@+id/seekSmoothing"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="stop"
-        android:id="@+id/btnStop"/>
+        android:layout_marginTop="8dp"
+        android:max="100"
+        android:progress="20" />
+
+    <Button
+        android:id="@+id/btnScan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="scan" />
+
+    <Button
+        android:id="@+id/btnStop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="stop" />
+
+    <ImageView
+        android:id="@+id/arrow"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/arrow" />
 
     <ListView
+        android:id="@+id/lvMain"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/lvMain"/>
+        android:layout_height="match_parent" />
+
 
 </LinearLayout>
