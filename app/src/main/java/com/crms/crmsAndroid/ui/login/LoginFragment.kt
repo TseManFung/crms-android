@@ -11,12 +11,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import android.widget.Toast
 import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.databinding.FragmentLoginBinding
 
 import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.SharedViewModel
+import com.fyp.crms_backend.utils.Permission
+import com.google.android.material.navigation.NavigationView
 
 class LoginFragment : Fragment() {
 
@@ -118,14 +121,25 @@ class LoginFragment : Fragment() {
 
     private fun updateUiWithUser(model: LoggedInUserView) {
         val welcomeMsg = getString(R.string.welcome) + model.displayName
-        // TODO: initiate successful logged in experience, ex: navigate to the different fragment
-        // TODO: API, get fragment name, post /.
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcomeMsg, Toast.LENGTH_LONG).show()
 
+        // Update navigation header with user info
+        val navView: NavigationView = mainActivity.findViewById(R.id.nav_view)
+        val headerView = navView.getHeaderView(0)
+
+        val tvName = headerView.findViewById<TextView>(R.id.tvName)
+        val tvIdentity = headerView.findViewById<TextView>(R.id.tvIdentity)
+
+        tvName.text = model.displayName // Set user's name
+
+        // Set identity using Permission based on access level
+        val accessLevel = model.accessLevel // Assume accessLevel is part of the model
+        val permission = Permission.fromLevel(accessLevel)
+        tvIdentity.text = permission?.displayName ?: "Unknown" // Set to permission name or "Unknown"
+
         // Navigate to the TestRfid fragment
         mainActivity.navController.navigate(R.id.nav_testRfid)
-
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {
