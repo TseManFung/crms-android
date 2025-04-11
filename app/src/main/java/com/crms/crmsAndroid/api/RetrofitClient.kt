@@ -9,11 +9,14 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val baseUrl:String = "http://192.168.30.10:8787/api/"
-    //private const val baseUrl:String = "http://172.18.37.6:8787/api/"
+    private val baseUrls = listOf(
+        "http://192.168.30.10:8787/api/",
+        "http://172.18.37.6:8787/api/"
+    )
 
     private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(ErrorInterceptor(SharedViewModel().loginRepository)) // 加入攔截器
+        .addInterceptor(BaseUrlSwitcherInterceptor(baseUrls))
+        .addInterceptor(ErrorInterceptor(SharedViewModel().loginRepository))
         .addInterceptor(HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         })
@@ -21,7 +24,7 @@ object RetrofitClient {
 
     val instance: IApiService by lazy {
         Retrofit.Builder()
-            .baseUrl(baseUrl)
+            .baseUrl(baseUrls.first())
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

@@ -31,6 +31,7 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private lateinit var arrow: ImageView
     val targetTag = "E2801170200001D37340092B"
     val directionCalculator = RelativeDirectionCalculator(targetTag)
+    val targetTagScannedRecord = mutableListOf<Double>()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -87,6 +88,7 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.seekSensitivity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 directionCalculator.distanceSensitivity = progress / 100.0
+                binding.tvSensitivity.text = "Distance Sensitivity: ${directionCalculator.distanceSensitivity}"
                 Log.d("s", "distanceSensitivity: $directionCalculator.distanceSensitivity")
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -96,11 +98,26 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.seekSmoothing.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 directionCalculator.angleSmoothingFactor = progress / 100.0
+                binding.tvangleSmoothingFactor.text = "Angle Smoothing Factor: ${directionCalculator.angleSmoothingFactor}"
                 Log.d("s", "angleSmoothingFactor: $directionCalculator.angleSmoothingFactor")
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
+
+        binding.seekPathLoss.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                directionCalculator.pathLoss = progress.toDouble()
+                binding.tvPathLoss.text = "Path Loss: $progress"
+                Log.d("PathLoss", "New pathLoss: ${directionCalculator.pathLoss}")
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+// Set initial value
+        binding.tvPathLoss.text = "Path Loss: ${directionCalculator.pathLoss.toInt()}"
+        binding.seekPathLoss.progress = directionCalculator.pathLoss.toInt()
 
         appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
 
@@ -120,6 +137,7 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private fun handleBtnScanClick() {
         directionCalculator.clearData()
+        targetTagScannedRecord.clear()
         try {
             objRfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
 
@@ -128,6 +146,8 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                     val message =
                         """|EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
                     viewModel.updateItem(0, message)
+                    targetTagScannedRecord.add(tag.rssi.toDouble())
+                    viewModel.updateItem(2, "平均target tag rssi: ${targetTagScannedRecord.average()}")
                 }
                 processTag(tag)
                 updateDirection()

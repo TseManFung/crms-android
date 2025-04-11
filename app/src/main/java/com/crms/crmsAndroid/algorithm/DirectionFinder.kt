@@ -22,7 +22,7 @@ class RelativeDirectionCalculator(private val targetTag: String) {
 
     var distanceSensitivity = 0.3 // 距离变化敏感度
     var angleSmoothingFactor = 0.2 // 角度平滑系数
-    private var pathLoss = 25.0
+    var pathLoss = 25.0
 
     // 状态保持
     private var lastPosition = Pair(0.0, 0.0)
