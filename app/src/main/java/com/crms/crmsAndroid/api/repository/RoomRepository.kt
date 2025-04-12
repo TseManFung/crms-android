@@ -25,7 +25,7 @@ class RoomRepository {
         }
     }
 
-    suspend fun newRoom(token: String, roomID: Int, rfid: String): Result<Boolean> { // 💡 注意返回的是 kotlin.Result
+    suspend fun newRoom(token: String, roomID: Int, rfid: String): Result<Boolean> {
         return try {
             val request = NewRoomRequest(token = token, roomID = roomID, roomRFID = rfid)
             val response = RetrofitClient.instance.newRoom(request)

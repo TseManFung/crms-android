@@ -1,6 +1,7 @@
 package com.crms.crmsAndroid.api.repository
 
 import com.crms.crmsAndroid.api.RetrofitClient
+import com.crms.crmsAndroid.api.requestResponse.item.DeleteItemRequest
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDRequest
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDResponse
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemRequest
@@ -37,6 +38,25 @@ class DeviceRepository {
             Result.failure(e)
         }
 
+    }
+
+    suspend fun deleteItem(token: String, deviceID: Int): Result<Boolean>  {
+
+        return try {
+            val request = DeleteItemRequest(token = token, deviceID = deviceID)
+            val response = RetrofitClient.instance.deleteItem(request)
+
+            if (response.isSuccessful) {
+                val status = response.body()?.status ?: false
+                Result.success(status)
+            } else {
+                Result.failure(Exception("exist RFID for this room"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
 
     }
+
+
 }
