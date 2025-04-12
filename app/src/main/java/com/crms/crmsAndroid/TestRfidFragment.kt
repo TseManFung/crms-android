@@ -13,7 +13,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.crms.crmsAndroid.algorithm.RelativeDirectionCalculator
+import com.crms.crmsAndroid.algorithm.DirectionFinder
 import com.crms.crmsAndroid.databinding.FragmentTestRfidBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
@@ -34,7 +34,7 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private lateinit var arrow: ImageView
     val targetTag = "E2801170200001D37340092B"
-    val directionCalculator = RelativeDirectionCalculator(targetTag)
+    val directionCalculator = DirectionFinder(targetTag)
     val targetTagScannedRecord = mutableListOf<Double>()
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -89,40 +89,6 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         arrow = binding.arrow
 
-        binding.seekSensitivity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                directionCalculator.distanceSensitivity = progress / 100.0
-                binding.tvSensitivity.text = "Distance Sensitivity: ${directionCalculator.distanceSensitivity}"
-                Log.d("s", "distanceSensitivity: $directionCalculator.distanceSensitivity")
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-
-        binding.seekSmoothing.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                directionCalculator.angleSmoothingFactor = progress / 100.0
-                binding.tvangleSmoothingFactor.text = "Angle Smoothing Factor: ${directionCalculator.angleSmoothingFactor}"
-                Log.d("s", "angleSmoothingFactor: $directionCalculator.angleSmoothingFactor")
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-
-        binding.seekPathLoss.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                directionCalculator.pathLoss = progress.toDouble()
-                binding.tvPathLoss.text = "Path Loss: $progress"
-                Log.d("PathLoss", "New pathLoss: ${directionCalculator.pathLoss}")
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-
-// Set initial value
-        binding.tvPathLoss.text = "Path Loss: ${directionCalculator.pathLoss.toInt()}"
-        binding.seekPathLoss.progress = directionCalculator.pathLoss.toInt()
-
         appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
 
     }
@@ -171,13 +137,27 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         directionCalculator.updateTag(tid, rssi)
     }
-
+    var lastDirectionDeg = 0.0F
     private fun updateDirection() {
-        val directionRad = directionCalculator.calculateDirection() ?: return
-        val directionDeg = Math.toDegrees(directionRad).toFloat()
-        val message = "方向：%.1f° | 弧度: $directionRad".format(directionDeg)
-        arrow.rotation = directionDeg+90
-        viewModel.updateItem(1, message)
+        directionCalculator.calculateDirection().let {directionRad->
+            if (directionRad.isNaN() || directionRad.isInfinite()) {
+                return // 如果是 NaN 或無窮大，則直接返回
+            }
+            val directionDeg = Math.toDegrees(directionRad).toFloat()
+            if (Math.abs(directionDeg - lastDirectionDeg) < 3) {
+                return
+            }else if (Math.abs(directionDeg - lastDirectionDeg) > 80){
+                lastDirectionDeg += directionDeg
+                lastDirectionDeg /= 2
+                directionCalculator.normalizeAngle(lastDirectionDeg)
+                return
+            }
+            lastDirectionDeg = directionDeg
+            val message = "方向：%.1f° | 弧度: $directionRad".format(directionDeg)
+            arrow.rotation = directionDeg+90
+            viewModel.updateItem(1, message)
+        }
+
 //        runOnUiThread {
 //            val degrees = Math.toDegrees(directionRad).toFloat()
 //            arrowView.rotation = degrees
@@ -219,7 +199,10 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     override fun onTriggerLongPress() {
         appendTextToList("call by trigger long press")
-        handleBtnScanClick()
+        if (!objRfidScanner.loopFlag){
+            handleBtnScanClick()
+
+        }
     }
 
     override fun onTriggerRelease() {

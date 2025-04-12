@@ -271,8 +271,10 @@ class rfidScanner {
                 val tag = scanner.readTagFromBuffer()
                 if (tag != null) {
                     onTagRead(tag)
-                } else {
-                    delay(100)
+                    delay(0)
+                }
+                else {
+                    delay(10)
                 }
             }
         }
@@ -482,4 +484,7 @@ class rfidScanner {
         }
     }
 
+    fun getPower(): Int {
+        return this.scanner.power
+    }
 }
