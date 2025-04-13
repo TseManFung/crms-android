@@ -10,10 +10,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.R
+import com.crms.crmsAndroid.databinding.FragmentInventoryBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
-import com.crms.crmsAndroid.databinding.FragmentInventoryBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

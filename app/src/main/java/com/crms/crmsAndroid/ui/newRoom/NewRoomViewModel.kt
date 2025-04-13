@@ -11,7 +11,6 @@ import com.crms.crmsAndroid.api.repository.RoomRepository
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
 import kotlinx.coroutines.launch
-import kotlin.Result
 
 class NewRoomViewModel : ViewModel() {
     // Scanned RFID data
@@ -19,6 +18,7 @@ class NewRoomViewModel : ViewModel() {
     val items: LiveData<List<String>> get() = _items
 
     private val repository = CampusRepository()
+
     // List of submitted tags
     private val _scannedTags = mutableSetOf<String>()
     val submittedTags = mutableSetOf<String>()
@@ -173,7 +173,12 @@ class NewRoomViewModel : ViewModel() {
                     _scannedTags.remove(tagId)
                 }
             } catch (e: Exception) {
-                _submitStatus.postValue(Pair(false, "Submission failed: ${e.message ?: "Network error"}"))
+                _submitStatus.postValue(
+                    Pair(
+                        false,
+                        "Submission failed: ${e.message ?: "Network error"}"
+                    )
+                )
             } finally {
 
                 val remainingItems = _items.value?.filter { item ->

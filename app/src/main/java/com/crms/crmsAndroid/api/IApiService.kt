@@ -26,10 +26,10 @@ import com.crms.crmsAndroid.api.requestResponse.item.GetItemRequest
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemResponse
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryRequest
 import com.crms.crmsAndroid.api.requestResponse.item.ManualInventoryResponse
-import com.crms.crmsAndroid.api.requestResponse.login.LoginByPwRequest
-import com.crms.crmsAndroid.api.requestResponse.login.LoginResponse
 import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDRequest
 import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDResponse
+import com.crms.crmsAndroid.api.requestResponse.login.LoginByPwRequest
+import com.crms.crmsAndroid.api.requestResponse.login.LoginResponse
 import com.crms.crmsAndroid.api.requestResponse.login.RenewTokenRequest
 import com.crms.crmsAndroid.api.requestResponse.login.RenewTokenResponse
 import retrofit2.Response
@@ -57,7 +57,7 @@ interface IApiService {
     suspend fun renewToken(@Body request: RenewTokenRequest): Response<RenewTokenResponse>
 
     @POST("updateItemLocation")
-    suspend fun updateItemLocation(@Body request:updateLocationByRFIDRequest):Response<updateLocationByRFIDResponse>
+    suspend fun updateItemLocation(@Body request: updateLocationByRFIDRequest): Response<updateLocationByRFIDResponse>
 
     @POST("newroom")
     suspend fun newRoom(@Body request: NewRoomRequest): Response<NewRoomResponse>

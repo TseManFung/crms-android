@@ -9,13 +9,11 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
-import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
@@ -75,25 +73,32 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.searchResult.adapter = listAdapter
 
         // Initialize Campus Spinner
-        campusAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        campusAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.campusSpinner.adapter = campusAdapter
 
         // Initialize Room Spinner
-        roomAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        roomAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.roomSpinner.adapter = roomAdapter
 
         // Initialize Device Spinner
-        deviceAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        deviceAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         deviceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.itemSpinner.adapter = deviceAdapter
 
 
-
         // Campus Spinner selection listener
         binding.campusSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 val selectedCampus = viewModel.campuses.value?.get(position)
                 selectedCampus?.campusId?.let { campusId ->
                     viewModel.fetchRooms(campusId)
@@ -105,7 +110,12 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         // Room Spinner selection listener
         binding.roomSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 val selectedRoom = viewModel.rooms.value?.get(position)
                 selectedRoom?.room?.let { roomId ->
                     viewModel.fetchDevices(roomId)
@@ -117,7 +127,12 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         // Device Spinner selection listener
         binding.itemSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 val selectedDevice = viewModel.devices.value?.get(position)
                 selectedItemRFIDs = selectedDevice?.deviceRFID?.map { it.RFID ?: "" }
 

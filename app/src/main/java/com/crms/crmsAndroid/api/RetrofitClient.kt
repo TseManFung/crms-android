@@ -2,9 +2,8 @@ package com.crms.crmsAndroid.api
 
 
 import com.crms.crmsAndroid.SharedViewModel
-import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.OkHttpClient
-
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

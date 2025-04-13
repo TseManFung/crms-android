@@ -20,15 +20,15 @@ class CampusRepository {
         }
     }
 
-    suspend fun AddCampuses(token:String){
+    suspend fun AddCampuses(token: String) {
 
     }
 
-    suspend fun EditCampuses(token:String){
+    suspend fun EditCampuses(token: String) {
 
     }
 
-    suspend fun DeleteCampuses(token:String){
+    suspend fun DeleteCampuses(token: String) {
 
     }
 

@@ -9,7 +9,6 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
-import kotlin.math.pow
 import kotlin.math.sin
 
 class DirectionFinder(private val targetTag: String) {
@@ -35,20 +34,21 @@ class DirectionFinder(private val targetTag: String) {
     data class PolarCoordinate(val distance: Double, val angle: Double)
 
 
-//    fun updateScannerRotation(angleDelta: Double) {
+    //    fun updateScannerRotation(angleDelta: Double) {
 //        scannerDirection.updateAndGet { normalizeAngle(it + angleDelta) }
 //    }
-private fun processReferenceTag(tid: String) {
-    if (tid != targetTag && !tagPositions.containsKey(tid)) {
-        // 动态生成参考标签初始位置
-        tagPositions[tid] = PolarCoordinate(
-            2.0 + Random().nextDouble() * 3.0, // 随机距离1-5米
-            Random().nextDouble() * 2 * PI    // 随机方向
-        ).also {
-            Log.d("DirectionFinder", "Auto-registered reference tag $tid at $it")
+    private fun processReferenceTag(tid: String) {
+        if (tid != targetTag && !tagPositions.containsKey(tid)) {
+            // 动态生成参考标签初始位置
+            tagPositions[tid] = PolarCoordinate(
+                2.0 + Random().nextDouble() * 3.0, // 随机距离1-5米
+                Random().nextDouble() * 2 * PI    // 随机方向
+            ).also {
+                Log.d("DirectionFinder", "Auto-registered reference tag $tid at $it")
+            }
         }
     }
-}
+
     fun updateTag(tid: String, rssi: Double) {
         processReferenceTag(tid)
         val validRssi = when {
@@ -62,20 +62,25 @@ private fun processReferenceTag(tid: String) {
         tagHistory.getOrPut(tid) { LinkedList() }.apply {
             add(currentTime to filteredRssi)
             while (size > maxHistorySize || (first?.let { currentTime - it.first > timeWindow } == true)) {
-                    removeFirst()
-                }
+                removeFirst()
+            }
         }
     }
+
     fun calculateDirection(): Double {
         return calculateDetailedDirection() ?: run {
             // 备用算法：基于最近3次RSSI变化
             val targetData = tagHistory[targetTag]?.takeLast(3) ?: return 0.0
             val trend = targetData.last().second - targetData.first().second
-            Log.d("DirectionFinderA", "Calculated direction: $currentAngle + ${(trend.coerceIn(-2.0, 2.0) * PI/3)}")
-            currentAngle + (trend.coerceIn(-2.0, 2.0) * PI/12)
+            Log.d(
+                "DirectionFinderA",
+                "Calculated direction: $currentAngle + ${(trend.coerceIn(-2.0, 2.0) * PI / 3)}"
+            )
+            currentAngle + (trend.coerceIn(-2.0, 2.0) * PI / 12)
 
         }
     }
+
     fun calculateDetailedDirection(): Double? {
         // 原有算法逻辑，但降低判断阈值
         val targetData = tagHistory[targetTag] ?: return null
@@ -102,7 +107,7 @@ private fun processReferenceTag(tid: String) {
 
         // 加权平均方向
         val totalWeight = vectors.sumOf { it.second }
-        var rawDirection = vectors.sumByDouble { it.first * it.second } / totalWeight
+        var rawDirection = vectors.sumOf { it.first * it.second } / totalWeight
 
         // 放宽扫描范围约束
         rawDirection = when {
@@ -113,17 +118,19 @@ private fun processReferenceTag(tid: String) {
         Log.d("DirectionFinderA", "Calculated direction: $rawDirection")
         return rawDirection
     }
+
     private fun estimateSingleTarget(data: List<Pair<Long, Double>>): Double? {
         val avgRssi = data.map { it.second }.average()
         val rssiTrend = data.takeLast(3).let { it.last().second - it.first().second }
 
         return when {
             avgRssi > -35.0 -> scannerDirection.get() // 视为正前方
-            rssiTrend > 2.0 -> normalizeAngle(scannerDirection.get() + PI/6) // 信号增强向右转
-            rssiTrend < -2.0 -> normalizeAngle(scannerDirection.get() - PI/6) // 信号减弱向左转
+            rssiTrend > 2.0 -> normalizeAngle(scannerDirection.get() + PI / 6) // 信号增强向右转
+            rssiTrend < -2.0 -> normalizeAngle(scannerDirection.get() - PI / 6) // 信号减弱向左转
             else -> null
         }
     }
+
     private fun estimatePosition(tid: String, data: List<Pair<Long, Double>>): PolarCoordinate? {
         if (data.isEmpty()) return null // 增加空数据保护
 
@@ -143,16 +150,16 @@ private fun processReferenceTag(tid: String) {
         val basePosition = tagPositions.getOrPut(tid) {
             PolarCoordinate(
                 2.0 + Random().nextDouble() * 3.0,
-                scannerDirection.get() + Random().nextDouble() * PI - PI/2
+                scannerDirection.get() + Random().nextDouble() * PI - PI / 2
             )
         }
 
         // 改进方向变化检测
         val rssiChanges = data.windowed(2).map { it[1].second - it[0].second }
         val directionDelta = when {
-            rssiChanges.average() > 1.0 -> PI/4  // 信号增强明显时右转
-            rssiChanges.average() < -1.0 -> -PI/4 // 信号减弱明显时左转
-            else -> (Random().nextDouble() - 0.5) * PI/8 // 添加随机扰动
+            rssiChanges.average() > 1.0 -> PI / 4  // 信号增强明显时右转
+            rssiChanges.average() < -1.0 -> -PI / 4 // 信号减弱明显时左转
+            else -> (Random().nextDouble() - 0.5) * PI / 8 // 添加随机扰动
         }
 
         return PolarCoordinate(
@@ -163,7 +170,7 @@ private fun processReferenceTag(tid: String) {
 
     private fun isInScanRange(angle: Double): Boolean {
         val relativeAngle = normalizeAngle(angle - scannerDirection.get())
-        return relativeAngle <= scannerFOV/2 || relativeAngle >= (2*PI - scannerFOV/2)
+        return relativeAngle <= scannerFOV / 2 || relativeAngle >= (2 * PI - scannerFOV / 2)
     }
 
     private fun shouldConsiderBackside(data: List<Pair<Long, Double>>): Boolean {
@@ -174,15 +181,18 @@ private fun processReferenceTag(tid: String) {
     private fun calculateWeight(tid: String): Double {
         val dataSizeWeight = (tagHistory[tid]?.size?.toDouble() ?: 0.0) / maxHistorySize
         val data = tagHistory[tid] ?: return 0.0
-        val freshness = 1.0 - (System.currentTimeMillis() - data.last().first) / timeWindow.toDouble()
-        val stability = 1.0 - data.windowed(2).map { abs(it[1].second - it[0].second) }.average() / 10.0
+        val freshness =
+            1.0 - (System.currentTimeMillis() - data.last().first) / timeWindow.toDouble()
+        val stability =
+            1.0 - data.windowed(2).map { abs(it[1].second - it[0].second) }.average() / 10.0
         return (freshness + stability + dataSizeWeight).coerceIn(0.3, 1.5)
     }
 
     private fun normalizeAngle(rad: Double): Double {
         return (rad % (2 * PI)).let { if (it < 0) it + 2 * PI else it }
     }
-    fun normalizeAngle(deg:Float): Float {
+
+    fun normalizeAngle(deg: Float): Float {
         return (deg % 360).let { if (it < 0) it + 360 else it }
     }
 

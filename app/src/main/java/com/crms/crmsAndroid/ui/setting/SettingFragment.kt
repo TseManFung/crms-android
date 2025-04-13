@@ -1,6 +1,5 @@
 package com.crms.crmsAndroid.ui.setting
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -70,7 +69,8 @@ class SettingFragment : Fragment() {
             try {
                 objRfidScanner.setPower(selectedPower)
                 viewModel.setPower(selectedPower)
-                Toast.makeText(requireContext(), "Power set to $selectedPower", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Power set to $selectedPower", Toast.LENGTH_SHORT)
+                    .show()
             } catch (e: IllegalArgumentException) {
                 tvCurrentPower.text = "Invalid Power Value"
             }

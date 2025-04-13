@@ -2,10 +2,18 @@ package com.crms.crmsAndroid.scanner
 
 import androidx.fragment.app.Fragment
 import com.rscja.deviceapi.RFIDWithUHFUART
-import com.rscja.deviceapi.interfaces.ConnectionStatus
-import com.rscja.deviceapi.interfaces.IUHF.*
-import java.util.ArrayList
 import com.rscja.deviceapi.entity.UHFTAGInfo
+import com.rscja.deviceapi.interfaces.ConnectionStatus
+import com.rscja.deviceapi.interfaces.IUHF.Bank_EPC
+import com.rscja.deviceapi.interfaces.IUHF.Bank_RESERVED
+import com.rscja.deviceapi.interfaces.IUHF.Bank_TID
+import com.rscja.deviceapi.interfaces.IUHF.Bank_USER
+import com.rscja.deviceapi.interfaces.IUHF.LockBank_ACCESS
+import com.rscja.deviceapi.interfaces.IUHF.LockBank_EPC
+import com.rscja.deviceapi.interfaces.IUHF.LockBank_KILL
+import com.rscja.deviceapi.interfaces.IUHF.LockBank_TID
+import com.rscja.deviceapi.interfaces.IUHF.LockBank_USER
+import com.rscja.deviceapi.interfaces.IUHF.LockMode_LOCK
 import com.rscja.deviceapi.interfaces.IUHFLocationCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -18,15 +26,15 @@ class rfidScanner {
     private val defaultPassword = "00000000"
     private var filterBank: Int? = null
     private var filterData: String? = null
-    private val lockCode: String;
+    private val lockCode: String
     var loopFlag = false
         private set
 
     init {
-        this.scanner = RFIDWithUHFUART.getInstance();
-        val isInit = this.scanner.init();
+        this.scanner = RFIDWithUHFUART.getInstance()
+        val isInit = this.scanner.init()
         if (!isInit) {
-            throw Exception("Failed to initialize RFID scanner");
+            throw Exception("Failed to initialize RFID scanner")
         }
         setMode()
         val lockBank: ArrayList<Int> =
@@ -47,7 +55,7 @@ class rfidScanner {
      * @return true if the resources were released successfully, false otherwise.
      */
     fun free(): Boolean {
-        return this.scanner.free();
+        return this.scanner.free()
     }
 
     /**
@@ -69,7 +77,7 @@ class rfidScanner {
      * @return the current connection status.
      */
     fun getConnectStatus(): ConnectionStatus {
-        return this.scanner.getConnectStatus()
+        return this.scanner.connectStatus
     }
 
     /**
@@ -77,7 +85,7 @@ class rfidScanner {
      * @return the version as a String.
      */
     fun getVersion(): String {
-        return this.scanner.getVersion()
+        return this.scanner.version
     }
 
     private fun makePtrAndCnt(bank: Int): Pair<Int, Int> {
@@ -246,7 +254,7 @@ class rfidScanner {
      */
     fun readTagLoop() {
         // only can read EPC / Tid / User
-        if (loopFlag){
+        if (loopFlag) {
             throw RuntimeException("Loop already started")
         }
         this.scanner.startInventoryTag()
@@ -272,8 +280,7 @@ class rfidScanner {
                 if (tag != null) {
                     onTagRead(tag)
                     delay(0)
-                }
-                else {
+                } else {
                     delay(10)
                 }
             }
@@ -453,16 +460,21 @@ class rfidScanner {
         if (!newPassword.matches(Regex("[0-9A-Fa-f]+"))) {
             throw IllegalArgumentException("Password must be a hexadecimal string")
         }
-        val p = newPassword+newPassword
+        val p = newPassword + newPassword
         return writeTag(Bank_RESERVED, p)
     }
 
-    fun startLocateTag(fragment: Fragment, bank: Int, data: String, locationCallback: IUHFLocationCallback) {
-        if (loopFlag){
+    fun startLocateTag(
+        fragment: Fragment,
+        bank: Int,
+        data: String,
+        locationCallback: IUHFLocationCallback
+    ) {
+        if (loopFlag) {
             throw RuntimeException("Loop already started")
         }
         val (ptr, cnt) = makePtrAndCnt(bank)
-        this.scanner.startLocation(fragment.requireContext(),data,bank,ptr,locationCallback)
+        this.scanner.startLocation(fragment.requireContext(), data, bank, ptr, locationCallback)
         this.loopFlag = true
 
 //        lifecycleScope.launch {
@@ -477,7 +489,7 @@ class rfidScanner {
 //        }
     }
 
-    fun stopLocateTag(){
+    fun stopLocateTag() {
         if (this.loopFlag) {
             this.scanner.stopLocation()
             this.loopFlag = false

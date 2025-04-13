@@ -3,20 +3,17 @@ package com.crms.crmsAndroid.ui.newRoom
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
-import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
@@ -24,8 +21,6 @@ import com.crms.crmsAndroid.databinding.FragmentNewRoomBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
-import kotlin.getValue
-import com.rscja.deviceapi.entity.UHFTAGInfo
 
 class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private var _binding: FragmentNewRoomBinding? = null
@@ -68,28 +63,36 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.lvSearchResult.adapter = listAdapter
 
 
-        binding.lvSearchResult.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
-            val selectedItem = listAdapter.getItem(position)
-            selectedItem?.let {
-                showSingleItemConfirmationDialog(it)
-            } ?: run {
-                Toast.makeText(context, "Selected item is invalid", Toast.LENGTH_SHORT).show()
+        binding.lvSearchResult.onItemClickListener =
+            AdapterView.OnItemClickListener { parent, view, position, id ->
+                val selectedItem = listAdapter.getItem(position)
+                selectedItem?.let {
+                    showSingleItemConfirmationDialog(it)
+                } ?: run {
+                    Toast.makeText(context, "Selected item is invalid", Toast.LENGTH_SHORT).show()
+                }
             }
-        }
         // Initialize Campus SpinnerSea
-        campusAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        campusAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spnCampus.adapter = campusAdapter
 
         // Initialize Room Spinner
-        roomAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        roomAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spnRoom.adapter = roomAdapter
 
 
         // Campus Spinner selection listener
         binding.spnCampus.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
 
                 val selectedCampus = viewModel.campuses.value?.get(position)
                 Log.d("Fragment", "Selected Campus ID: ${selectedCampus?.campusId}")
@@ -168,8 +171,6 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
 
-
-
     private fun setupObservers() {
         viewModel.items.observe(viewLifecycleOwner) { newItems ->
             Log.d("Fragment", "Observed items change. Size: ${newItems.size}")
@@ -205,11 +206,6 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
 
-
-
-
-
-
     private fun updateCampusSpinner(campuses: List<GetCampusResponse.Campus>) {
         val campusShortName = campuses.map { it.campusShortName ?: "Unknown" }
         campusAdapter.clear()
@@ -232,8 +228,6 @@ class NewRoomFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             binding.spnRoom.setSelection(0)
         }
     }
-
-
 
 
     private fun startScanning() {

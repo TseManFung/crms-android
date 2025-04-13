@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.repository.CampusRepository
@@ -26,24 +25,26 @@ class ManInventoryViewModel : ViewModel() {
 
 
     private val repository = CampusRepository()
+
     //Campus data
     private val _campuses = MutableLiveData<List<GetCampusResponse.Campus>>()
     val campuses: LiveData<List<GetCampusResponse.Campus>> = _campuses
 
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> = _errorMessage
+
     //Room data
     private val roomRepository = RoomRepository()
     private val _rooms = MutableLiveData<List<GetRoomResponse.SingleRoomResponse>>()
     val rooms: LiveData<List<GetRoomResponse.SingleRoomResponse>> = _rooms
+
     //Manual Inventory Data
     private val manualInventoryRepo = ManualInventoryRepository()
-    private var _manualInventoryResult= MutableLiveData<Result<ManualInventoryResponse>>()
+    private var _manualInventoryResult = MutableLiveData<Result<ManualInventoryResponse>>()
     val manualInventoryResult: LiveData<Result<ManualInventoryResponse>> = _manualInventoryResult
 
     lateinit var sharedViewModel: SharedViewModel
     private val token: String get() = sharedViewModel.token
-
 
 
     fun fetchCampuses() {
@@ -108,7 +109,6 @@ class ManInventoryViewModel : ViewModel() {
     fun clearItems() {
         _items.value?.clear()
     }
-
 
 
 }

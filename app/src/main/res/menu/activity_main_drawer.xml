@@ -5,10 +5,7 @@
 
     <group android:checkableBehavior="single">
 
-        <item
-            android:id="@+id/nav_inventory"
-            android:icon="@drawable/ic_menu_inventory"
-            android:title="Inventory" />
+
         <item
             android:id="@+id/nav_manInventory"
             android:icon="@drawable/ic_menu_maninventory"
@@ -17,19 +14,12 @@
             android:id="@+id/searchItem"
             android:icon="@drawable/ic_menu_search"
             android:title="Search Item" />
-        <item
-            android:id="@+id/nav_updateItem"
-            android:icon="@drawable/ic_menu_updateroomitem"
-            android:title="Update room item" />
+
         <item
             android:id="@+id/nav_updateLoc"
             android:icon="@drawable/ic_menu_updateitemloc"
             android:title="Update item location" />
 
-        <item
-            android:id="@+id/nav_addItem"
-            android:icon="@drawable/ic_menu_additem"
-            android:title="Add item" />
 
         <item
             android:id="@+id/nav_deleteItem"
@@ -40,10 +30,6 @@
             android:id="@+id/nav_newRoom"
             android:icon="@drawable/ic_menu_newroom"
             android:title="New Room" />
-
-        <item
-            android:id="@+id/nav_testRfid"
-            android:title="Test RFID" />
 
 
     </group>

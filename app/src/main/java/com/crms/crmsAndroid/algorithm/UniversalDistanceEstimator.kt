@@ -1,6 +1,5 @@
 package com.crms.crmsAndroid.algorithm
 
-import kotlin.math.abs
 import kotlin.math.pow
 
 class UniversalDistanceEstimator {
@@ -10,18 +9,20 @@ class UniversalDistanceEstimator {
     fun addCalibrationPoint(measuredRssi: Double, knownDistance: Double) {
         // 使用提供的校准数据预加载
         if (calibrationPoints.size < 10) {
-            calibrationPoints.addAll(listOf(
-                Pair(-34.0, 0.0),
-                Pair(-39.0, 10.0),
-                Pair(-50.0, 20.0),
-                Pair(-64.0, 30.0),
-                Pair(-66.5, 40.0),
-                Pair(-70.0, 50.0),
-                Pair(-74.9, 60.0),
-                Pair(-73.8, 70.0),
-                Pair(-81.6, 80.0),
-                Pair(-77.9, 100.0)
-            ))
+            calibrationPoints.addAll(
+                listOf(
+                    Pair(-34.0, 0.0),
+                    Pair(-39.0, 10.0),
+                    Pair(-50.0, 20.0),
+                    Pair(-64.0, 30.0),
+                    Pair(-66.5, 40.0),
+                    Pair(-70.0, 50.0),
+                    Pair(-74.9, 60.0),
+                    Pair(-73.8, 70.0),
+                    Pair(-81.6, 80.0),
+                    Pair(-77.9, 100.0)
+                )
+            )
             updateCoefficients()
         }
     }

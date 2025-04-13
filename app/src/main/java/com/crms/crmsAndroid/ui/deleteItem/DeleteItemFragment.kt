@@ -1,8 +1,6 @@
 package com.crms.crmsAndroid.ui.deleteItem
 
-import android.Manifest
 import android.app.AlertDialog
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,8 +8,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -227,7 +223,7 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    if(position == 0){
+                    if (position == 0) {
                         return
                     }
                     binding.scanItemText.visibility = View.VISIBLE
@@ -248,7 +244,7 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         val scanRmBtn = binding.scanRmBtn
         val scanRmList = binding.scanRmResult
 
-        scanRmRadio.setOnClickListener{
+        scanRmRadio.setOnClickListener {
             initializeUI()
             scanRmBtn.visibility = View.VISIBLE
             scanRmList.visibility = View.VISIBLE

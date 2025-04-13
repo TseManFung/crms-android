@@ -4,13 +4,12 @@ import com.crms.crmsAndroid.api.RetrofitClient
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomRequest
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomRequest
-import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomResponse
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlin.Result
 
 class RoomRepository {
-    suspend fun getRooms(token: String, campusID: Int): Result<List<GetRoomResponse.SingleRoomResponse>> {
+    suspend fun getRooms(
+        token: String,
+        campusID: Int
+    ): Result<List<GetRoomResponse.SingleRoomResponse>> {
         return try {
             val request = GetRoomRequest(token = token, campusID = campusID)
             val response = RetrofitClient.instance.getRooms(request)
@@ -25,7 +24,11 @@ class RoomRepository {
         }
     }
 
-    suspend fun newRoom(token: String, roomID: Int, rfid: String): Result<Boolean> { // 💡 注意返回的是 kotlin.Result
+    suspend fun newRoom(
+        token: String,
+        roomID: Int,
+        rfid: String
+    ): Result<Boolean> { // 💡 注意返回的是 kotlin.Result
         return try {
             val request = NewRoomRequest(token = token, roomID = roomID, roomRFID = rfid)
             val response = RetrofitClient.instance.newRoom(request)

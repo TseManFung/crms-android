@@ -1,15 +1,11 @@
 package com.crms.crmsAndroid
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
-import android.widget.SeekBar
-import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -18,8 +14,6 @@ import com.crms.crmsAndroid.databinding.FragmentTestRfidBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
-import com.crms.crmsAndroid.ui.login.LoggedInUserView
-import com.google.android.material.navigation.NavigationView
 import com.rscja.deviceapi.entity.UHFTAGInfo
 
 class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
@@ -101,10 +95,6 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
-
     private fun handleBtnScanClick() {
         directionCalculator.clearData()
         targetTagScannedRecord.clear()
@@ -117,7 +107,10 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                         """|EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
                     viewModel.updateItem(0, message)
                     targetTagScannedRecord.add(tag.rssi.toDouble())
-                    viewModel.updateItem(2, "平均target tag rssi: ${targetTagScannedRecord.average()}")
+                    viewModel.updateItem(
+                        2,
+                        "平均target tag rssi: ${targetTagScannedRecord.average()}"
+                    )
                 }
                 processTag(tag)
                 updateDirection()
@@ -137,16 +130,17 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         directionCalculator.updateTag(tid, rssi)
     }
+
     var lastDirectionDeg = 0.0F
     private fun updateDirection() {
-        directionCalculator.calculateDirection().let {directionRad->
+        directionCalculator.calculateDirection().let { directionRad ->
             if (directionRad.isNaN() || directionRad.isInfinite()) {
                 return // 如果是 NaN 或無窮大，則直接返回
             }
             val directionDeg = Math.toDegrees(directionRad).toFloat()
             if (Math.abs(directionDeg - lastDirectionDeg) < 3) {
                 return
-            }else if (Math.abs(directionDeg - lastDirectionDeg) > 80){
+            } else if (Math.abs(directionDeg - lastDirectionDeg) > 80) {
                 lastDirectionDeg += directionDeg
                 lastDirectionDeg /= 2
                 directionCalculator.normalizeAngle(lastDirectionDeg)
@@ -154,7 +148,7 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             }
             lastDirectionDeg = directionDeg
             val message = "方向：%.1f° | 弧度: $directionRad".format(directionDeg)
-            arrow.rotation = directionDeg+90
+            arrow.rotation = directionDeg + 90
             viewModel.updateItem(1, message)
         }
 
@@ -184,10 +178,6 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         objRfidScanner.stopReadTagLoop()
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -199,7 +189,7 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     override fun onTriggerLongPress() {
         appendTextToList("call by trigger long press")
-        if (!objRfidScanner.loopFlag){
+        if (!objRfidScanner.loopFlag) {
             handleBtnScanClick()
 
         }

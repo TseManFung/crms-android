@@ -1,15 +1,14 @@
 package com.crms.crmsAndroid
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.forEach
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -17,23 +16,21 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.crms.crmsAndroid.data.LoginDataSource
-import com.crms.crmsAndroid.data.LoginRepository
 import com.crms.crmsAndroid.databinding.ActivityMainBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
-import com.crms.crmsAndroid.ui.login.LoginFragment
+import com.fyp.crms_backend.utils.AccessPagePermission
 import com.google.android.material.navigation.NavigationView
-import com.jakewharton.threetenabp.AndroidThreeTen
 import com.google.android.material.snackbar.Snackbar
+import com.jakewharton.threetenabp.AndroidThreeTen
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     lateinit var objRfidScanner: rfidScanner
-        private set;
+        private set
     lateinit var navController: NavController
         private set
     private var isLongPress: Boolean = false
@@ -54,29 +51,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //setContentView(R.layout.activity_main)
-
         AndroidThreeTen.init(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         navController = findNavController(R.id.nav_host_fragment_content_main)
-
         setSupportActionBar(binding.appBarMain.toolbar)
-
-        /* binding.appBarMain.fab.setOnClickListener { view ->
-             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                 .setAction("Action", null)
-                 .setAnchorView(R.id.fab).show()
-         }*/
-        //Remove the floating action button (MAIL) from the main activity
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
 
+        // 定義頂層導航目標
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_manInventory,
@@ -88,26 +74,54 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_updateLoc,
                 R.id.nav_newRoom,
                 R.id.searchItem,
-                R.id.nav_testRfid
+                //R.id.nav_testRfid
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-
-
         sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
 
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id == R.id.nav_login) {
-                supportActionBar?.setDisplayHomeAsUpEnabled(false)
-                invalidateOptionsMenu() // Refresh the options menu to hide the settings icon
-            } else {
-                supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                invalidateOptionsMenu() // Refresh the options menu to show the settings icon
-            }
+        // 監聽權限變化並更新側邊欄
+        sharedViewModel.accessPage.observe(this) { accessPage ->
+            setupNavigationMenu(accessPage ?: 0) // 處理空值
         }
 
+        // 初始權限檢查
+        setupNavigationMenu(sharedViewModel.accessPage.value ?: 0)
+
+        // 單一導航監聽器（合併邏輯）
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            // 控制 ActionBar 返回按鈕
+            supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.nav_login)
+
+            // 權限檢查
+            AccessPagePermission.fragmentPermissions[destination.id]?.let { permission ->
+                if (!AccessPagePermission.hasPermission(
+                        sharedViewModel.accessPage.value ?: 0,
+                        permission
+                    )
+                ) {
+                    Snackbar.make(binding.root, "permission denied", Snackbar.LENGTH_SHORT).show()
+                    navController.navigate(R.id.searchItem) // 跳轉到默認允許的頁面
+                }
+            }
+            invalidateOptionsMenu()
+        }
+    }
+
+    // 根據權限設置側邊欄菜單可見性
+// MainActivity.kt
+    private fun setupNavigationMenu(accessPage: Int) {
+        val navView: NavigationView = binding.navView
+        navView.menu.forEach { menuItem ->
+            val permission = AccessPagePermission.fragmentPermissions[menuItem.itemId]
+            menuItem.isVisible = if (permission != null) {
+                AccessPagePermission.hasPermission(accessPage, permission)
+            } else {
+                true // 未列出的默認可見
+            }
+        }
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
@@ -185,16 +199,19 @@ class MainActivity : AppCompatActivity() {
                 findNavController(R.id.nav_host_fragment_content_main).navigate(R.id.action_settings)
                 true
             }
+
             R.id.action_logout -> {
                 handleLogout()
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
 
     private fun handleLogout() {
         sharedViewModel.logout()
+        setupNavigationMenu(0) // 重置菜單可見性
         navController.navigate(R.id.nav_login)
     }
 
