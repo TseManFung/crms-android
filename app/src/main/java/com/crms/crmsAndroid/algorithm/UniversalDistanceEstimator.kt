@@ -3,7 +3,14 @@ package com.crms.crmsAndroid.algorithm
 import kotlin.math.pow
 
 class UniversalDistanceEstimator {
-    private var coefficients = doubleArrayOf(3.8e-5, -0.0032, 0.083, -1.08, 4.25, -32.8)
+    private var coefficients = doubleArrayOf(
+        -1.076e+02,
+        -4.647e+00,
+        -1.867e-02,
+        1.100e-03,
+        1.229e-05
+    )
+    private var coefficients1 = doubleArrayOf(3.8e-5, -0.0032, 0.083, -1.08, 4.25, -32.8)
     private val calibrationPoints = mutableListOf<Pair<Double, Double>>()
 
     fun addCalibrationPoint(measuredRssi: Double, knownDistance: Double) {
@@ -29,7 +36,7 @@ class UniversalDistanceEstimator {
 
     private fun updateCoefficients() {
         val n = calibrationPoints.size
-        val degree = 4 // 二次多项式
+        val degree = 4
 
         // 构建矩阵 X^T * X 和 X^T * Y
         val XtX = Array(degree + 1) { DoubleArray(degree + 1) }
@@ -69,5 +76,11 @@ class UniversalDistanceEstimator {
         return coefficients.foldIndexed(0.0) { i, acc, coeff ->
             acc + coeff * rssi.pow(i)
         }
+    }
+    fun rssiToDistance1(rssi: Double): Double {
+        return coefficients1.foldIndexed(0.0) { i, acc, coeff ->
+            acc + coeff * rssi.pow(i)
+        }
+        //return rssiToDistance(rssi)
     }
 }

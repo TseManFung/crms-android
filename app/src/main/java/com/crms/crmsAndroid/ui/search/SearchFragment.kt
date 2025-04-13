@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -15,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.SharedViewModel
+import com.crms.crmsAndroid.algorithm.DirectionFinder
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemResponse
@@ -23,12 +25,15 @@ import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
 import com.crms.crmsAndroid.utils.CompassManager
+import com.rscja.deviceapi.entity.UHFTAGInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.math.max
+import kotlin.math.min
 
 class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private var _binding: FragmentSearchBinding? = null
@@ -44,11 +49,17 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private val tagInfoMap = mutableMapOf<String, String>()
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
-    private var startStatus = false
+    private lateinit var arrow: ImageView
+    private val startStatus get() = objRfidScanner.loopFlag
     private lateinit var compassManager: CompassManager
 
     private var selectedItemRFIDs: List<String>? = null
 
+    private val directionCalculator: DirectionFinder = DirectionFinder()
+    private var lastDirectionDeg = 0.0F
+    private lateinit var itemPartAdapter: ArrayAdapter<String>
+    private lateinit var rfidAdapter: ArrayAdapter<String>
+    private var selectedRFID: String? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -127,38 +138,105 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         // Device Spinner selection listener
         binding.itemSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedDevice = viewModel.devices.value?.get(position)
+                selectedDevice?.let { device ->
+                    loadItemPartsAndRFIDs(device) // 确保调用加载方法
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        binding.itemPartSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedDevice = viewModel.devices.value?.find {
+                    it.partID.any { part -> part.devicePartName == binding.itemPartSpinner.selectedItem }
+                }
+                selectedDevice?.let { device ->
+                    val partId = device.partID[position].devicePartID
+                    viewModel.selectPart(partId)
+                    viewModel.loadRFIDs(device, partId)
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        binding.startPauseBtn.setOnClickListener {
+            if (!startStatus) {
+                handleBtnScanClick(objRfidScanner)
+            } else {
+                objRfidScanner.stopReadTagLoop()
+                binding.startPauseBtn.text = "Start to Search"
+            }
+        }
+
+        arrow = binding.arrow
+        // 初始化 ItemPart Spinner
+        itemPartAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        itemPartAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.itemPartSpinner.adapter = itemPartAdapter
+
+        // 初始化 RFID Spinner
+        rfidAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        rfidAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.rfidSpinner.adapter = rfidAdapter
+
+        // 新增 RFID Spinner 監聽
+        binding.rfidSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 view: View?,
                 position: Int,
                 id: Long
             ) {
-                val selectedDevice = viewModel.devices.value?.get(position)
-                selectedItemRFIDs = selectedDevice?.deviceRFID?.map { it.RFID ?: "" }
-
-                Log.d("SearchFragment", "Selected Item RFIDs: $selectedItemRFIDs")
-
-                binding.startPauseBtn.visibility = View.VISIBLE
-                binding.cardView.visibility = View.VISIBLE
+                selectedRFID = viewModel.rfids.value?.get(position)?.second
+                updateUIVisibility()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+    }
 
+    private fun loadItemPartsAndRFIDs(device: GetItemResponse.Devices) {
+        if (device.partID.isEmpty() || device.deviceRFID.isEmpty()) {
+            Toast.makeText(context, "No parts or RFID data available", Toast.LENGTH_SHORT).show()
+            return
+        }
+        // 加载零件数据
+        val parts = device.partID.map { it.devicePartName ?: "Unnamed Part" }
+        itemPartAdapter.clear()
+        itemPartAdapter.addAll(parts)
+        itemPartAdapter.notifyDataSetChanged()
 
+        // 调用 ViewModel 加载 RFID 数据
+        viewModel.loadRFIDs(device)
 
-        binding.startPauseBtn.setOnClickListener {
-            if (!startStatus) {
-                handleBtnScanClick(objRfidScanner)
-                startStatus = true
-            } else {
-                objRfidScanner.stopReadTagLoop()
-                sendDataToBackend()
-                startStatus = false
-            }
+        // 观察 RFID 数据变化
+        viewModel.rfids.observe(viewLifecycleOwner) { rfidPairs ->
+            val formattedLabels = rfidPairs.map { it.first }
+            rfidAdapter.clear()
+            rfidAdapter.addAll(formattedLabels)
+            rfidAdapter.notifyDataSetChanged()
         }
 
-        appendTextToList("RFID 版本: ${objRfidScanner.getVersion()}")
+        // 显示相关UI元素
+        binding.itemPartSpinner.visibility = View.VISIBLE
+        binding.itemPartText.visibility = View.VISIBLE
+        binding.rfidSpinner.visibility = View.VISIBLE
+        binding.rfidText.visibility = View.VISIBLE
+    }
+
+    private fun updateUIVisibility() {
+        if (selectedRFID != null) {
+            binding.startPauseBtn.visibility = View.VISIBLE
+            binding.cardView.visibility = View.VISIBLE
+        } else {
+            binding.startPauseBtn.visibility = View.GONE
+            binding.cardView.visibility = View.GONE
+        }
     }
 
     private fun setupObservers() {
@@ -235,85 +313,84 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         listAdapter.notifyDataSetChanged()
     }
 
-    private fun sendDataToBackend() {
-        lifecycleScope.launch {
+
+    private fun handleBtnScanClick(rfidScanner: rfidScanner) {
+        binding.startPauseBtn.text = "Pause"
+        selectedRFID?.let { targetRfid ->
             try {
-                val url = URL("https://your-backend-endpoint.com/api/scan")
-                val jsonInputString = JSONObject(tagInfoMap as Map<*, *>?).toString()
+                directionCalculator.clearData()
+                directionCalculator.targetTag = targetRfid
+                Log.d("search1", "handleBtnScanClick: $targetRfid")
+                rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
 
-                withContext(Dispatchers.IO) {
-                    val conn = url.openConnection() as HttpURLConnection
-                    conn.requestMethod = "POST"
-                    conn.setRequestProperty("Content-Type", "application/json; utf-8")
-                    conn.setRequestProperty("Accept", "application/json")
-                    conn.doOutput = true
 
-                    conn.outputStream.use { os ->
-                        val input = jsonInputString.toByteArray()
-                        os.write(input, 0, input.size)
+                    if (tag.tid == directionCalculator.targetTag) {
+                        controlProgressBar(tag.rssi)
                     }
+                    processTag(tag)
+                    updateDirection()
 
-                    val responseCode = conn.responseCode
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        appendTextToList("Data sent successfully")
-                    } else {
-                        appendTextToList("Failed to send data: $responseCode")
-                    }
+
                 }
             } catch (e: Exception) {
-                appendTextToList("Error: ${e.message}")
+                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+        } ?: run {
+            Toast.makeText(context, "Please select an RFID first", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun handleBtnScanClick(rfidScanner: rfidScanner) {
-        try {
-            rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
-                val currentTid = tag.tid
-                val message =
-                    """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
+    private fun processTag(tag: UHFTAGInfo) {
+        // 假设tag对象包含tid和rssi属性
+        val tid = tag.tid ?: return
+        val rssi = tag.rssi.toDouble()
 
+        directionCalculator.updateTag(tid, rssi)
+    }
 
-                if (selectedItemRFIDs?.contains(tag.epc) == true) {
-                    if (!scannedTags.contains(currentTid)) {
-                        scannedTags.add(currentTid)
-                        tagInfoMap[currentTid] = message
-                        viewModel.addItem(message)
-                        controlProgressBar(tag.rssi)
-                    } else {
-                        viewModel.updateItem(currentTid, message)
-                        controlProgressBar(tag.rssi)
-                    }
-                } else {
-                    appendTextToList("Cant find device")
-                }
+    private fun updateDirection() {
+        directionCalculator.calculateDirection().let { directionRad ->
+            if (directionRad.isNaN() || directionRad.isInfinite()) {
+                return // 如果是 NaN 或無窮大，則直接返回
             }
-        } catch (e: Exception) {
-            appendTextToList("Error: ${e.message}")
+            val directionDeg = Math.toDegrees(directionRad).toFloat()
+            val d = Math.abs(directionDeg - lastDirectionDeg)
+            if (d < 20 || d>120) {
+                return
+            }
+            else if (Math.abs(directionDeg - lastDirectionDeg) > 50) {
+                lastDirectionDeg += directionDeg
+                lastDirectionDeg /= 2
+                directionCalculator.normalizeAngle(lastDirectionDeg)
+                return
+            }
+            lastDirectionDeg = directionDeg
+            arrow.rotation = directionDeg + 90
         }
+
     }
 
     fun controlProgressBar(value: String) {
         try {
-            val rssi = value.toFloat()
+            val rssi = value.toDouble()
             val progressBar: ProgressBar = binding.progressBar
             val percentage = binding.startPercentage
-            var progress = ((rssi + 100) * 100 / 60).toInt()
-            progress = progress.coerceAtMost(100)
+            val progress: Int = max(0, min(100, ((rssi+80)*1.81).toInt()))
             progressBar.progress = progress
-            percentage.text = "$progress%"
+            percentage.text = "Estimated distance: ${
+                String.format(
+                    "%.2f",
+                    directionCalculator.getEstimatedDirection(rssi)
+                )
+            } cm"
         } catch (e: NumberFormatException) {
-            appendTextToList("Error: Invalid number format for RSSI value: $value")
+            //appendTextToList("Error: Invalid number format for RSSI value: $value")
         }
-    }
-
-    private fun calculateDirection(x1: Double, y1: Double, x2: Double, y2: Double): Double {
-        val angle = Math.toDegrees(Math.atan2(y2 - y1, x2 - x1))
-        return if (angle < 0) angle + 360 else angle
     }
 
     override fun onPause() {
         super.onPause()
+        binding.startPauseBtn.text = "Start to Search"
         objRfidScanner.stopReadTagLoop()
         scannedTags.clear()
         tagInfoMap.clear()
@@ -326,6 +403,10 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.itemText.visibility = View.GONE
         binding.startPauseBtn.visibility = View.GONE
         binding.cardView.visibility = View.GONE
+        binding.itemPartText.visibility = View.GONE
+        binding.itemPartSpinner.visibility = View.GONE
+        binding.rfidText.visibility = View.GONE
+        binding.rfidSpinner.visibility = View.GONE
     }
 
     override fun onResume() {
@@ -347,6 +428,7 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     override fun onTriggerRelease() {
         objRfidScanner.stopReadTagLoop()
+        binding.startPauseBtn.text = "Start to Search"
     }
 
     override fun onTriggerDown() {

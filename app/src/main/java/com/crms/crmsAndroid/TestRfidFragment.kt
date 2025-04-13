@@ -28,7 +28,7 @@ class TestRfidFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private lateinit var arrow: ImageView
     val targetTag = "E2801170200001D37340092B"
-    val directionCalculator = DirectionFinder(targetTag)
+    val directionCalculator = DirectionFinder()
     val targetTagScannedRecord = mutableListOf<Double>()
     override fun onCreateView(
         inflater: LayoutInflater,

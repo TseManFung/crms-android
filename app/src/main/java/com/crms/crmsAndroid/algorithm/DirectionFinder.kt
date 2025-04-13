@@ -11,7 +11,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-class DirectionFinder(private val targetTag: String) {
+class DirectionFinder() {
     private val tagHistory = HashMap<String, LinkedList<Pair<Long, Double>>>()
     private val kalmanFilters = HashMap<String, KalmanFilter>()
     private val tagPositions = HashMap<String, PolarCoordinate>()
@@ -30,7 +30,7 @@ class DirectionFinder(private val targetTag: String) {
     // 状态保持
     private var currentAngle = 0.0
     private var distanceEstimator = UniversalDistanceEstimator()
-
+    var targetTag: String = ""
     data class PolarCoordinate(val distance: Double, val angle: Double)
 
 
@@ -143,7 +143,7 @@ class DirectionFinder(private val targetTag: String) {
         }
 
         // 改进距离估算稳定性
-        val distance = distanceEstimator.rssiToDistance(avgRssi)
+        val distance = distanceEstimator.rssiToDistance1(avgRssi)
             .coerceIn(0.1, 150.0) // 扩大有效范围
 
         // 改进方向估算逻辑
@@ -197,8 +197,13 @@ class DirectionFinder(private val targetTag: String) {
     }
 
     fun clearData() {
+        targetTag = ""
         tagHistory.clear()
         kalmanFilters.clear()
         currentAngle = 0.0
+    }
+
+    fun getEstimatedDirection(Rssi : Double): Double {
+        return distanceEstimator.rssiToDistance(Rssi)
     }
 }
