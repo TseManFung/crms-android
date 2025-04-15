@@ -7,11 +7,13 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
+import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
@@ -76,22 +78,19 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         // Set up buttons
         binding.btnScan.setOnClickListener {
-            handleBtnScanClick(objRfidScanner)
-
-        }
-        binding.btnStop.setOnClickListener {
-            if (binding.btnStop.text == "Stop") {
-                objRfidScanner.stopReadTagLoop()
-                binding.btnStop.text = "Clear"
+            if (binding.btnScan.text == "Start Scanning") {
+                startScanning()
             } else {
-                clearAllData()
-                binding.btnUpdateLocation.visibility = View.GONE
-                sendToBackend = true
-
+                stopScanning()
             }
         }
 
-        // Set up update location button
+        binding.btnClear.setOnClickListener {
+            clearAllData()
+            stopScanning()
+            updateButtonStates()
+        }
+
         binding.btnUpdateLocation.setOnClickListener {
             updateItemLocation()
         }
@@ -134,8 +133,7 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             items.clear()
             items.addAll(newItems)
             listAdapter.notifyDataSetChanged()
-            binding.btnUpdateLocation.visibility =
-                if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
+            updateButtonStates()
         }
 
         viewModel.campuses.observe(viewLifecycleOwner) { campuses ->
@@ -342,5 +340,32 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
     private fun StopScanning() {
         objRfidScanner.stopReadTagLoop()
+    }
+
+    private fun startScanning() {
+        binding.btnScan.text = "Stop Scanning"
+        binding.btnScan.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.ganyu_red)
+        handleBtnScanClick(objRfidScanner)
+        updateButtonStates()
+    }
+
+    private fun stopScanning() {
+        objRfidScanner.stopReadTagLoop()
+        binding.btnScan.text = "Start Scanning"
+        binding.btnScan.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.ganyu_dark)
+        updateButtonStates()
+    }
+
+    private fun updateButtonStates() {
+        val hasData = items.isNotEmpty()
+
+        binding.btnUpdateLocation.isEnabled = hasData
+        binding.btnUpdateLocation.backgroundTintList = ContextCompat.getColorStateList(
+            requireContext(),
+            if (hasData) R.color.ganyu_primary else R.color.ganyu_disabled
+        )
+
+        binding.btnUpdateLocation.visibility = if (hasData) View.VISIBLE else View.GONE
+        binding.btnClear.visibility = if (hasData) View.VISIBLE else View.GONE
     }
 }

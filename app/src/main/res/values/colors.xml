@@ -21,8 +21,13 @@
     <color name="ganyu_dark">#2E86C1</color>
     <color name="ganyu_white">#FFFFFF</color>
     <color name="ganyu_silver">#BCC6CC</color>
+    <color name="ganyu_red"> #FF0000</color>
+
 
     <color name="green_state">#4CAF50</color>
     <color name="yellow_state">#FFEB3B</color>
     <color name="gray_state">#9E9E9E</color>
+
+    <color name="ganyu_disabled">#808080</color>
+    <color name="ganyu_alert">#FF0000</color>
 </resources>

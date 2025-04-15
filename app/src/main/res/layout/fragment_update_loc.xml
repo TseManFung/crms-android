@@ -51,26 +51,25 @@
         android:layout_marginBottom="8dp"/>
 
     <Button
-        android:id="@+id/btnStop"
+        android:id="@+id/btnClear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Stop"
+        android:text="Clear"
         android:backgroundTint="@color/ganyu_silver"
         android:textColor="@android:color/white"
         app:elevation="4dp"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone"/>
+        android:layout_marginBottom="8dp"/>
 
     <Button
         android:id="@+id/btnUpdateLocation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Update Location"
-        android:backgroundTint="@color/ganyu_primary"
+        android:backgroundTint="@color/ganyu_disabled"
         android:textColor="@android:color/white"
         app:elevation="4dp"
         android:layout_marginBottom="16dp"
-        android:visibility="gone"/>
+        android:enabled="false"/>
 
     <TextView
         android:layout_width="wrap_content"
