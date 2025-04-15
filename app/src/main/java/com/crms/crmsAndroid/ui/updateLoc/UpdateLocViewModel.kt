@@ -6,14 +6,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.repository.CampusRepository
+import com.crms.crmsAndroid.api.repository.DeviceRepository
 import com.crms.crmsAndroid.api.repository.RoomRepository
 import com.crms.crmsAndroid.api.repository.updateLocationRepository
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDResponse
 import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDResponse
 import kotlinx.coroutines.launch
 
 class UpdateLocViewModel : ViewModel() {
+
+    private val deviceRepository = DeviceRepository()
+
+
     // Scanned data
     private val _items = MutableLiveData<MutableList<String>>(mutableListOf())
     val items: LiveData<MutableList<String>> get() = _items
@@ -66,6 +72,10 @@ class UpdateLocViewModel : ViewModel() {
             val result = updateLocationRepo.updateLocation(token, roomID, itemList)
             _updateResult.postValue(result)
         }
+    }
+
+    suspend fun getDeviceByRFID(rfid: String): Result<GetItemByRFIDResponse> {
+        return deviceRepository.getItemByRFID(token, rfid)
     }
 
     fun addItem(item: String) {

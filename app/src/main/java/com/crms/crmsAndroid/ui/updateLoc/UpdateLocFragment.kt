@@ -32,6 +32,8 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private lateinit var roomAdapter: ArrayAdapter<String>
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
+    private var sendToBackend: Boolean = false
+    private var roomID: Int? = null
 
     private val items = mutableListOf<String>()
     private val scannedTags = mutableSetOf<String>()
@@ -84,6 +86,8 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             } else {
                 clearAllData()
                 binding.btnUpdateLocation.visibility = View.GONE
+                sendToBackend = true
+
             }
         }
 
@@ -101,10 +105,22 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 id: Long
             ) {
                 resetAllData()
+                StopScanning()
                 val selectedCampus = viewModel.campuses.value?.get(position)
                 selectedCampus?.campusId?.let { campusId ->
                     viewModel.fetchRooms(campusId)
                 }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        //Rooms Spinner selection listener
+        binding.roomSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                clearAllData()
+                StopScanning()
+                roomID = viewModel.rooms.value?.get(position)?.room ?: 0
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -171,26 +187,38 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
         try {
-
-            if (!objRfidScanner.loopFlag) {
-                rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
-                    val currentTid = tag.tid
-                    val message =
-                        """ |EPC: ${tag.epc} |TID: ${tag.tid} |RSSI: ${tag.rssi} |Antenna: ${tag.ant} |Index: ${tag.index} |PC: ${tag.pc} |Remain: ${tag.remain} |Reserved: ${tag.reserved} |User: ${tag.user} """.trimMargin()
-
-                    if (!scannedTags.contains(currentTid)) {
-                        scannedTags.add(currentTid)
-                        tagInfoMap[currentTid] = message
-                        viewModel.addItem(message)
-                    } else {
-                        viewModel.updateItem(currentTid, message)
-                    }
-                }
-                binding.btnStop.text = "Stop"
-                binding.btnStop.visibility = View.VISIBLE
-
+            if (sendToBackend == true) {
+                clearAllData()
+                sendToBackend = false
             }
 
+            val selectedRoomPosition = binding.roomSpinner.selectedItemPosition
+            val selectedRoomID = viewModel.rooms.value?.get(selectedRoomPosition)?.room
+
+            rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
+                val currentTid = tag.tid
+                if (!scannedTags.contains(currentTid)) {
+                    scannedTags.add(currentTid)
+                    //test
+                    // 立即调用API获取设备信息
+                    lifecycleScope.launch {
+                        val result = viewModel.getDeviceByRFID(currentTid)
+                        result.onSuccess { response ->
+                            if (response.roomID == selectedRoomID) {
+                                val displayText =
+                                    "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
+                                tagInfoMap[currentTid] = displayText
+                                viewModel.addItem(displayText)
+                                listAdapter.notifyDataSetChanged()
+                            }
+                        }.onFailure { exception ->
+//                            val fallbackText = "RFID: $currentTid (API Error)"
+//                            tagInfoMap[currentTid] = fallbackText
+//                            viewModel.addItem(fallbackText)
+                        }
+                    }
+                }
+            }
 
         } catch (e: Exception) {
             appendTextToList("Error: ${e.message}")
@@ -198,15 +226,18 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun updateItemLocation() {
+
         val rfidList = scannedTags.toList()
         val selectedRoomPosition = binding.roomSpinner.selectedItemPosition
-        val roomId = viewModel.rooms.value?.get(selectedRoomPosition)?.room ?: run {
+        roomID = viewModel.rooms.value?.get(selectedRoomPosition)?.room ?: run {
             Toast.makeText(context, "Please select a room", Toast.LENGTH_SHORT).show()
             return
         }
 
         lifecycleScope.launch {
-            viewModel.updateItemLocation(roomId, rfidList)
+            viewModel.updateItemLocation( roomID!!,rfidList)
+            viewModel.clearItems()
+            scannedTags.clear()
         }
     }
 
@@ -285,6 +316,10 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
 
     override fun onTriggerLongPress() {
+        if (sendToBackend == true) {
+            clearAllData()
+            sendToBackend = false
+        }
         if (!objRfidScanner.loopFlag) {
             handleBtnScanClick(objRfidScanner)
         }
@@ -295,8 +330,15 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     override fun onTriggerDown() {
+        if (sendToBackend == true) {
+            clearAllData()
+            sendToBackend = false
+        }
         if (!objRfidScanner.loopFlag) {
             handleBtnScanClick(objRfidScanner)
         }
+    }
+    private fun StopScanning() {
+        objRfidScanner.stopReadTagLoop()
     }
 }

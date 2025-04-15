@@ -78,6 +78,7 @@ class ManInventoryViewModel : ViewModel() {
     }
 
     fun sendManualInventory(rfidList: List<String>, roomId: Int) {
+
         viewModelScope.launch {
             val result = manualInventoryRepo.manualInventory(
                 token = token,
@@ -86,6 +87,7 @@ class ManInventoryViewModel : ViewModel() {
             )
             _manualInventoryResult.postValue(result)
         }
+
     }
 
 

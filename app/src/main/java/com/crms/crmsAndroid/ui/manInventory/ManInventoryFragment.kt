@@ -104,12 +104,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         //Rooms Spinner selection listener
         binding.spnRoom.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 clearAllData()
                 StopScanning()
                 roomID = viewModel.rooms.value?.get(position)?.room ?: 0
@@ -199,7 +194,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun updateRoomSpinner(rooms: List<GetRoomResponse.SingleRoomResponse>) {
-        val roomNames = rooms.map { it.roomName ?: "Unknown" }
+        val roomNames = rooms.map { "${it.roomName} (Room ${it.roomNumber})" ?: "Unknown" }
         Log.d("Fragment", "Room names: $roomNames")
         roomAdapter.clear()
         roomAdapter.addAll(roomNames)
@@ -217,6 +212,10 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 clearAllData()
                 sendToBackend = false
             }
+
+            val selectedRoomPosition = binding.spnRoom.selectedItemPosition
+            val selectedRoomID = viewModel.rooms.value?.get(selectedRoomPosition)?.room
+
             rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
                 val currentTid = tag.tid
                 val currentRFID = tag.epc
@@ -227,11 +226,13 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                     lifecycleScope.launch {
                         val result = viewModel.getDeviceByRFID(currentTid)
                         result.onSuccess { response ->
-                            val displayText =
-                                "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
-                            tagInfoMap[currentTid] = displayText
-                            viewModel.addItem(displayText)
-                            listAdapter.notifyDataSetChanged()
+                            if (response.roomID == selectedRoomID) {
+                                val displayText =
+                                    "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
+                                tagInfoMap[currentTid] = displayText
+                                viewModel.addItem(displayText)
+                                listAdapter.notifyDataSetChanged()
+                            }
                         }.onFailure { exception ->
 //                            val fallbackText = "RFID: $currentTid (API Error)"
 //                            tagInfoMap[currentTid] = fallbackText
@@ -258,6 +259,8 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         lifecycleScope.launch {
             viewModel.sendManualInventory(rfidList, roomID!!)
+            viewModel.clearItems()
+            scannedTags.clear()
         }
     }
 
@@ -279,6 +282,10 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
                 item.preState == 'L' && item.afterState == 'A' ->
                     "🔄 ${item.deviceName} (${item.rfid}) - Returned" to R.color.green_state
+
+                item.preState == 'M' && item.afterState == 'M' ->
+                    "🔄 ${item.deviceName} (${item.rfid}) - Still Not Found" to R.color.green_state
+
 
                 item.preState == 'A' && item.afterState == 'M' ->
                     "❌ ${item.deviceName} (${item.rfid}) - Cant Find" to R.color.gray_state
