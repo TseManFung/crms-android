@@ -19,7 +19,10 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
 import java.io.IOException
 
-class ErrorInterceptor(private val loginRepository: LoginRepository) : Interceptor {
+class ErrorInterceptor(private var loginRepository: LoginRepository) : Interceptor {
+    fun setLoginRepository(loginRepository: LoginRepository) {
+        this.loginRepository = loginRepository
+    }
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val response = chain.proceed(request)
@@ -108,6 +111,7 @@ class ErrorInterceptor(private val loginRepository: LoginRepository) : Intercept
         description: String
     ): Response {
         return when (ErrorCode.toErrorCode(errorCode)) {
+            ErrorCode.E10,
             ErrorCode.E04 -> handleTokenExpired(chain, currentRequest)
             // more Error handle in here
 

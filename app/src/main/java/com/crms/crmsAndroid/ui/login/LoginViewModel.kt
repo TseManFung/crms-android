@@ -32,6 +32,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
                             accessPage = result.data.accessPage
                         )
                     )
+
             } else {
                 _loginResult.value = LoginResult(error = R.string.login_failed)
             }

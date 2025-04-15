@@ -283,7 +283,7 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun updateRoomSpinner(rooms: List<GetRoomResponse.SingleRoomResponse>) {
-        val roomNames = rooms.map { it.roomName ?: "Unknown" }
+        val roomNames = rooms.map { "${it.roomName} (Room ${it.roomNumber})" ?: "Unknown" }
         roomAdapter.clear()
         roomAdapter.addAll(roomNames)
         roomAdapter.notifyDataSetChanged()

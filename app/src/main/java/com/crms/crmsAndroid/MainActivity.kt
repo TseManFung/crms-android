@@ -16,6 +16,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.crms.crmsAndroid.api.RetrofitClient
 import com.crms.crmsAndroid.databinding.ActivityMainBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
@@ -81,6 +82,7 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
 
         sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
+        RetrofitClient.initialize(sharedViewModel)
 
         // 監聽權限變化並更新側邊欄
         sharedViewModel.accessPage.observe(this) { accessPage ->

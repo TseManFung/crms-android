@@ -201,7 +201,7 @@ class DeleteItemFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun updateRoomSpinner(rooms: List<GetRoomResponse.SingleRoomResponse>) {
-        val roomNames = rooms.map { it.roomName ?: "Unknown" }
+        val roomNames = rooms.map { "${it.roomName} (Room ${it.roomNumber})" ?: "Unknown" }
         Log.d("Fragment", "Room names: $roomNames")
         roomAdapter.clear()
         roomAdapter.addAll(roomNames)
