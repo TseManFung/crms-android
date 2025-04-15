@@ -261,6 +261,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             viewModel.sendManualInventory(rfidList, roomID!!)
             viewModel.clearItems()
             scannedTags.clear()
+            updateButtonStates()
             StopScanning()
         }
     }
