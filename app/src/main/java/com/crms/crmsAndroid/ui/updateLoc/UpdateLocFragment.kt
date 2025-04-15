@@ -204,13 +204,12 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                     lifecycleScope.launch {
                         val result = viewModel.getDeviceByRFID(currentTid)
                         result.onSuccess { response ->
-                            if (response.roomID == selectedRoomID) {
                                 val displayText =
                                     "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
                                 tagInfoMap[currentTid] = displayText
                                 viewModel.addItem(displayText)
                                 listAdapter.notifyDataSetChanged()
-                            }
+
                         }.onFailure { exception ->
 //                            val fallbackText = "RFID: $currentTid (API Error)"
 //                            tagInfoMap[currentTid] = fallbackText
@@ -238,6 +237,7 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             viewModel.updateItemLocation( roomID!!,rfidList)
             viewModel.clearItems()
             scannedTags.clear()
+            StopScanning()
         }
     }
 
@@ -276,8 +276,9 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         viewModel.clearItems()
         items.clear()
         listAdapter.notifyDataSetChanged()
-        binding.btnStop.text = "Stop"
-        binding.btnUpdateLocation.visibility = View.GONE
+        roomAdapter.clear()
+        roomAdapter.notifyDataSetChanged()
+
         objRfidScanner.stopReadTagLoop()
     }
 
@@ -285,9 +286,10 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         scannedTags.clear()
         tagInfoMap.clear()
         viewModel.clearItems()
-        binding.btnStop.visibility = View.GONE
-        binding.btnUpdateLocation.visibility = View.GONE
+        items.clear()
+
     }
+
 
     private fun appendTextToList(text: String) {
         items.add(text)
