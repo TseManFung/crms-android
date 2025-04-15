@@ -277,14 +277,23 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 item.preState == 'A' && item.afterState == 'A' ->
                     "✅ ${item.deviceName} (${item.rfid}) - Normal" to R.color.green_state
 
-                item.preState == 'B' && item.afterState == 'A' ->
+                item.preState == 'L' && item.afterState == 'A' ->
                     "🔄 ${item.deviceName} (${item.rfid}) - Returned" to R.color.green_state
 
-                item.preState == 'A' && item.afterState == 'C' ->
+                item.preState == 'A' && item.afterState == 'M' ->
                     "❌ ${item.deviceName} (${item.rfid}) - Cant Find" to R.color.gray_state
 
-                item.preState == 'B' && item.afterState == 'B' ->
-                    "⚠️ ${item.deviceName} (${item.rfid}) - Loading" to R.color.yellow_state
+                item.preState == 'M' && item.afterState == 'A' ->
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Found" to R.color.yellow_state
+
+                item.preState == 'S' && item.afterState == 'A' ->
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Item Arrived" to R.color.yellow_state
+
+                item.preState == 'E' && item.afterState == 'A' ->
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Expired but Returned" to R.color.yellow_state
+
+                item.preState == 'W' && item.afterState == 'A' ->
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Finish repairs" to R.color.yellow_state
 
                 else ->
                     "❓ ${item.deviceName} (${item.rfid}) - Unknown" to R.color.gray_state
