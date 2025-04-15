@@ -20,6 +20,8 @@ import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomRequest
 import com.crms.crmsAndroid.api.requestResponse.Room.NewRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusRequest
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.DeleteItemRequest
+import com.crms.crmsAndroid.api.requestResponse.item.DeleteItemResponse
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDRequest
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemByRFIDResponse
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemRequest
@@ -64,4 +66,7 @@ interface IApiService {
 
     @POST("getitembyrfid")
     suspend fun getItemByRFID(@Body request: GetItemByRFIDRequest): Response<GetItemByRFIDResponse>
+
+    @POST("deleteitem")
+    suspend fun deleteItem(@Body request: DeleteItemRequest): Response<DeleteItemResponse>
 }
