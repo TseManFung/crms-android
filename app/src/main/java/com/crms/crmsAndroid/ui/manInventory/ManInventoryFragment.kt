@@ -287,13 +287,13 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                     "⚠️ ${item.deviceName} (${item.rfid}) - Found" to R.color.yellow_state
 
                 item.preState == 'S' && item.afterState == 'A' ->
-                    "⚠️ ${item.deviceName} (${item.rfid}) - Item Arrived" to R.color.yellow_state
+                    "✅ ${item.deviceName} (${item.rfid}) - Item Arrived" to R.color.yellow_state
 
                 item.preState == 'E' && item.afterState == 'A' ->
                     "⚠️ ${item.deviceName} (${item.rfid}) - Expired but Returned" to R.color.yellow_state
 
                 item.preState == 'W' && item.afterState == 'A' ->
-                    "⚠️ ${item.deviceName} (${item.rfid}) - Finish repairs" to R.color.yellow_state
+                    "✅ ${item.deviceName} (${item.rfid}) - Finish repairs" to R.color.yellow_state
 
                 else ->
                     "❓ ${item.deviceName} (${item.rfid}) - Unknown" to R.color.gray_state
