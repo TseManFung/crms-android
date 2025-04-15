@@ -8,7 +8,11 @@ import com.crms.crmsAndroid.api.requestResponse.item.GetItemRequest
 import com.crms.crmsAndroid.api.requestResponse.item.GetItemResponse
 
 class DeviceRepository {
-    suspend fun getItems(token: String, roomID: Int, stateList: List<String>): Result<List<GetItemResponse.Devices>> {
+    suspend fun getItems(
+        token: String,
+        roomID: Int,
+        stateList: List<String>
+    ): Result<List<GetItemResponse.Devices>> {
         return try {
             val request = GetItemRequest(token = token, roomID = roomID, stateList = stateList)
             val response = RetrofitClient.instance.getItems(request)

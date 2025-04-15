@@ -11,4 +11,4 @@ data class GetItemByRFIDResponse(
     val remark: String,
     val devicePartID: Int,
     val devicePartName: String,
-): Response
+) : Response

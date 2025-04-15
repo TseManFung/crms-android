@@ -18,6 +18,6 @@ data class updateLocationByRFIDResponse(
 
     data class FailData(
         val something: String,
-        val reason:String
+        val reason: String
     ) : Response
 }

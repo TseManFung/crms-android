@@ -1,11 +1,7 @@
 package com.crms.crmsAndroid.api
 
-import android.app.AlertDialog
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import com.crms.crmsAndroid.CAMS
-import com.crms.crmsAndroid.api.exception.ErrorCodeException
 import com.crms.crmsAndroid.api.requestResponse.ErrorResponse
 import com.crms.crmsAndroid.data.LoginRepository
 import com.crms.crmsAndroid.utils.DialogUtils
@@ -17,13 +13,10 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
-import okio.BufferedSource
-import org.json.JSONObject
 import java.io.IOException
 
 class ErrorInterceptor(private val loginRepository: LoginRepository) : Interceptor {
@@ -44,12 +37,14 @@ class ErrorInterceptor(private val loginRepository: LoginRepository) : Intercept
             return buildErrorResponse(response, "Error: ${e.message ?: "Unknown error"}")
         }
     }
+
     private fun buildErrorResponse(originalResponse: Response, message: String): Response {
         return originalResponse.newBuilder()
             .code(500)
             .body(message.toResponseBody("application/json".toMediaType()))
             .build()
     }
+
     private fun parseErrorResponse(responseBody: String): Pair<String?, String?> {
         return try {
             val jsonObject = Gson().fromJson(responseBody, ErrorResponse::class.java)
@@ -90,7 +85,7 @@ class ErrorInterceptor(private val loginRepository: LoginRepository) : Intercept
                 "/renewtoken" -> jsonObject.addProperty("refreshToken", newToken)
                 else -> jsonObject.addProperty("token", newToken)
             }
-            val newBody = RequestBody.create(requestBody.contentType(), jsonObject.toString())
+            val newBody = jsonObject.toString().toRequestBody(requestBody.contentType())
             request.newBuilder()
                 .method(request.method, newBody)
                 .build()
@@ -98,12 +93,14 @@ class ErrorInterceptor(private val loginRepository: LoginRepository) : Intercept
             request // 解析失败时返回原始请求
         }
     }
+
     private fun showErrorDialog(message: String) {
         DialogUtils.showErrorDialog(
             context = CAMS.getAppContext(),
             message = message
         )
     }
+
     private fun handleBusinessError(
         chain: Interceptor.Chain,
         currentRequest: Request,

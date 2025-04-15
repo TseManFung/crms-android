@@ -2,15 +2,11 @@ package com.crms.crmsAndroid.data
 
 
 import com.crms.crmsAndroid.api.RetrofitClient
-import com.crms.crmsAndroid.api.exception.ErrorCodeException
-import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomRequest
 import com.crms.crmsAndroid.api.requestResponse.login.LoginByPwRequest
 import com.crms.crmsAndroid.api.requestResponse.login.LoginResponse
 import com.crms.crmsAndroid.api.requestResponse.login.RenewTokenRequest
 import com.crms.crmsAndroid.api.requestResponse.login.RenewTokenResponse
-import com.crms.crmsAndroid.utils.ErrorCode
 import java.io.IOException
-import java.util.UUID
 
 /**
  * Class that handles authentication w/ login credentials and retrieves user information.

@@ -36,6 +36,6 @@ data class GetItemResponse(
     data class DeviceRFID(
         val deviceID: Int? = null,
         val devicePartID: Int? = null,
-        val RFID: String? = null
+        val rfid: String? = null
     )
 }

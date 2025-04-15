@@ -1,6 +1,5 @@
 package com.crms.crmsAndroid.ui.setting
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -43,9 +42,8 @@ class SettingFragment : Fragment() {
         val tvCurrentPower = binding.tvCurrentPower
         val btnConfirm = binding.btnConfirm
 
-        // 获取保存的功率值
-        val sharedPreferences = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
-        selectedPower = sharedPreferences.getInt("power", 5)
+
+        selectedPower = objRfidScanner.getPower()
         objRfidScanner.setPower(selectedPower)
         tvCurrentPower.text = "Current Power: $selectedPower"
         seekBarPower.progress = selectedPower - 5
@@ -71,8 +69,8 @@ class SettingFragment : Fragment() {
             try {
                 objRfidScanner.setPower(selectedPower)
                 viewModel.setPower(selectedPower)
-                sharedPreferences.edit().putInt("power", selectedPower).apply()
-                Toast.makeText(requireContext(), "Power set to $selectedPower", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Power set to $selectedPower", Toast.LENGTH_SHORT)
+                    .show()
             } catch (e: IllegalArgumentException) {
                 tvCurrentPower.text = "Invalid Power Value"
             }

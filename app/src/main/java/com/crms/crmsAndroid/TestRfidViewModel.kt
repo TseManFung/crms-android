@@ -1,12 +1,11 @@
 package com.crms.crmsAndroid
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class TestRfidViewModel : ViewModel() {
-    private val itemsList:MutableList<String> = mutableListOf("","","")
+    private val itemsList: MutableList<String> = mutableListOf("", "", "")
     private val _items = MutableLiveData<MutableList<String>>(itemsList)
     val items: LiveData<MutableList<String>> get() = _items
 

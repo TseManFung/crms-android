@@ -9,7 +9,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.crms.crmsAndroid.MainActivity
@@ -27,12 +26,12 @@ import kotlinx.coroutines.launch
 class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     private var _binding: FragmentManInventoryBinding? = null
     private val binding get() = _binding!!
-            private lateinit var viewModel: ManInventoryViewModel
-    private  var roomID:Int?=null
-    private var sendToBackend:Boolean = false
+    private lateinit var viewModel: ManInventoryViewModel
+    private var roomID: Int? = null
+    private var sendToBackend: Boolean = false
 
 
-    private lateinit var listAdapter:ArrayAdapter<String>
+    private lateinit var listAdapter: ArrayAdapter<String>
     private lateinit var mainActivity: MainActivity
     private lateinit var objRfidScanner: rfidScanner
     private lateinit var campusAdapter: ArrayAdapter<String>
@@ -67,12 +66,14 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
 
         // Initialize Campus Spinner
-        campusAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        campusAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spnCampus.adapter = campusAdapter
 
         // Initialize Room Spinner
-        roomAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        roomAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spnRoom.adapter = roomAdapter
 
@@ -83,7 +84,12 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         // Campus Spinner selection listener
         binding.spnCampus.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 resetAllData()
                 StopScanning()
                 val selectedCampus = viewModel.campuses.value?.get(position)
@@ -98,7 +104,12 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         //Rooms Spinner selection listener
         binding.spnRoom.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 clearAllData()
                 StopScanning()
                 roomID = viewModel.rooms.value?.get(position)?.room ?: 0
@@ -108,15 +119,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         }
 
 
-
-
-
-
-
-
-
-
-    // Set up buttons
+        // Set up buttons
         binding.btnSearch.setOnClickListener {
 
             handleBtnScanClick(objRfidScanner)
@@ -141,15 +144,19 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun updateButtonStates() {
-        binding.linearLayoutStopClear.visibility = if (objRfidScanner.loopFlag) View.VISIBLE else View.GONE
-        binding.btnSendToBackend.visibility = if (scannedTags.isNotEmpty()) View.VISIBLE else View.GONE
+        binding.linearLayoutStopClear.visibility =
+            if (objRfidScanner.loopFlag) View.VISIBLE else View.GONE
+        binding.btnSendToBackend.visibility =
+            if (scannedTags.isNotEmpty()) View.VISIBLE else View.GONE
     }
+
     private fun setupObservers() {
         viewModel.items.observe(viewLifecycleOwner) { newItems ->
             items.clear()
             items.addAll(newItems)
             listAdapter.notifyDataSetChanged()
-            binding.lvSearchResult.visibility = if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.lvSearchResult.visibility =
+                if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
         }
 
 
@@ -204,10 +211,9 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
 
-
     private fun handleBtnScanClick(rfidScanner: rfidScanner) {
         try {
-            if(sendToBackend == true){
+            if (sendToBackend == true) {
                 clearAllData()
                 sendToBackend = false
             }
@@ -221,7 +227,8 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                     lifecycleScope.launch {
                         val result = viewModel.getDeviceByRFID(currentTid)
                         result.onSuccess { response ->
-                            val displayText = "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
+                            val displayText =
+                                "${response.deviceName}-${response.devicePartName}-${response.deviceState}"
                             tagInfoMap[currentTid] = displayText
                             viewModel.addItem(displayText)
                             listAdapter.notifyDataSetChanged()
@@ -239,7 +246,6 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             appendTextToList("Error: ${e.message}")
         }
     }
-
 
 
     private fun sendDataToBackend() {
@@ -270,12 +276,25 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             when {
                 item.preState == 'A' && item.afterState == 'A' ->
                     "✅ ${item.deviceName} (${item.rfid}) - Normal" to R.color.green_state
-                item.preState == 'B' && item.afterState == 'A' ->
+
+                item.preState == 'L' && item.afterState == 'A' ->
                     "🔄 ${item.deviceName} (${item.rfid}) - Returned" to R.color.green_state
-                item.preState == 'A' && item.afterState == 'C' ->
+
+                item.preState == 'A' && item.afterState == 'M' ->
                     "❌ ${item.deviceName} (${item.rfid}) - Cant Find" to R.color.gray_state
-                item.preState == 'B' && item.afterState == 'B' ->
-                    "⚠️ ${item.deviceName} (${item.rfid}) - Loading" to R.color.yellow_state
+
+                item.preState == 'M' && item.afterState == 'A' ->
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Found" to R.color.yellow_state
+
+                item.preState == 'S' && item.afterState == 'A' ->
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Item Arrived" to R.color.yellow_state
+
+                item.preState == 'E' && item.afterState == 'A' ->
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Expired but Returned" to R.color.yellow_state
+
+                item.preState == 'W' && item.afterState == 'A' ->
+                    "⚠️ ${item.deviceName} (${item.rfid}) - Finish repairs" to R.color.yellow_state
+
                 else ->
                     "❓ ${item.deviceName} (${item.rfid}) - Unknown" to R.color.gray_state
             }
@@ -330,7 +349,6 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
 
-
     private fun clearAllData() {
         scannedTags.clear()
         tagInfoMap.clear()
@@ -341,7 +359,6 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.btnStop.text = "Stop"
         binding.btnSendToBackend.visibility = View.GONE // Hide btnSendToBackend
     }
-
 
 
     private fun appendTextToList(text: String) {
@@ -368,7 +385,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     override fun onTriggerLongPress() {
-        if(sendToBackend == true){
+        if (sendToBackend == true) {
             clearAllData()
             sendToBackend = false
         }
@@ -378,7 +395,6 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
 
-
     override fun onTriggerRelease() {
         objRfidScanner.stopReadTagLoop()
         updateButtonStates()
@@ -386,7 +402,7 @@ class ManInventoryFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     override fun onTriggerDown() {
-        if(sendToBackend == true){
+        if (sendToBackend == true) {
             clearAllData()
             sendToBackend = false
         }

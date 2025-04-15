@@ -1,6 +1,5 @@
 package com.crms.crmsAndroid.ui.search
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -36,11 +35,9 @@ class SearchViewModel : ViewModel() {
 
     private val _items = MutableLiveData<List<String>>()
     val items: LiveData<List<String>> get() = _items
-
-
-    init {
-
-    }
+    private var _selectedPartId: Int? = null
+    private val _rfids = MutableLiveData<List<Pair<String, String>>>()
+    val rfids: LiveData<List<Pair<String, String>>> = _rfids
 
     fun fetchCampuses() {
         viewModelScope.launch {
@@ -92,5 +89,24 @@ class SearchViewModel : ViewModel() {
 
     fun clearItems() {
         _items.value = emptyList()
+    }
+
+
+    fun loadRFIDs(device: GetItemResponse.Devices, partId: Int? = null) {
+        val filteredRFIDs = if (partId != null) {
+            device.deviceRFID.filter { it.devicePartID == partId }
+        } else {
+            device.deviceRFID
+        }
+
+        val rfidList = filteredRFIDs.mapIndexed { index, rfid ->
+            Pair("RFID label ${index + 1}", rfid.rfid ?: "")
+        }
+        _rfids.value = rfidList
+    }
+
+    // 新增方法处理零件选择
+    fun selectPart(partId: Int?) {
+        _selectedPartId = partId
     }
 }

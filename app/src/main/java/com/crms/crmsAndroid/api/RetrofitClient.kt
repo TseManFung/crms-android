@@ -2,16 +2,15 @@ package com.crms.crmsAndroid.api
 
 
 import com.crms.crmsAndroid.SharedViewModel
-import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.OkHttpClient
-
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
     private val baseUrls = listOf(
+        "http://172.18.37.6:8787/api/",
         "http://192.168.30.10:8787/api/",
-        "http://172.18.37.6:8787/api/"
     )
 
     private val okHttpClient = OkHttpClient.Builder()

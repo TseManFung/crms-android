@@ -24,7 +24,13 @@ class ManualInventoryRepository {
                     Result.success(it)
                 } ?: Result.failure(Exception("Empty response body"))
             } else {
-                Result.failure(Exception("API error: ${response.code()} ${response.errorBody()?.string()}"))
+                Result.failure(
+                    Exception(
+                        "API error: ${response.code()} ${
+                            response.errorBody()?.string()
+                        }"
+                    )
+                )
             }
         } catch (e: Exception) {
             Result.failure(e)

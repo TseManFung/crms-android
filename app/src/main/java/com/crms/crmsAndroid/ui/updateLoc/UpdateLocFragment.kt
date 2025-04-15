@@ -15,11 +15,11 @@ import com.crms.crmsAndroid.MainActivity
 import com.crms.crmsAndroid.SharedViewModel
 import com.crms.crmsAndroid.api.requestResponse.Room.GetRoomResponse
 import com.crms.crmsAndroid.api.requestResponse.campus.GetCampusResponse
+import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDResponse
 import com.crms.crmsAndroid.databinding.FragmentUpdateLocBinding
 import com.crms.crmsAndroid.scanner.rfidScanner
 import com.crms.crmsAndroid.ui.ITriggerDown
 import com.crms.crmsAndroid.ui.ITriggerLongPress
-import com.crms.crmsAndroid.api.requestResponse.item.updateLocationByRFIDResponse
 import kotlinx.coroutines.launch
 
 class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
@@ -61,12 +61,14 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
         binding.lvMain.adapter = listAdapter
 
         // Initialize Campus Spinner
-        campusAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        campusAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.campusSpinner.adapter = campusAdapter
 
         // Initialize Room Spinner
-        roomAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
+        roomAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf())
         roomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.roomSpinner.adapter = roomAdapter
 
@@ -92,7 +94,12 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
         // Campus Spinner selection listener
         binding.campusSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 resetAllData()
                 val selectedCampus = viewModel.campuses.value?.get(position)
                 selectedCampus?.campusId?.let { campusId ->
@@ -111,7 +118,8 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             items.clear()
             items.addAll(newItems)
             listAdapter.notifyDataSetChanged()
-            binding.btnUpdateLocation.visibility = if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.btnUpdateLocation.visibility =
+                if (newItems.isNotEmpty()) View.VISIBLE else View.GONE
         }
 
         viewModel.campuses.observe(viewLifecycleOwner) { campuses ->
@@ -218,8 +226,10 @@ class UpdateLocFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             val statusMessage = when {
                 item.successData != null ->
                     "✅ ${item.deviceName} - Success: ${item.successData.something}"
+
                 item.failData != null ->
                     "❌ ${item.deviceName} - Failed: ${item.failData.reason}"
+
                 else ->
                     "❓ ${item.deviceName} - Unknown status"
             }

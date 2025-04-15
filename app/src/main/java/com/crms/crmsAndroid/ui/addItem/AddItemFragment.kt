@@ -7,12 +7,11 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
-import android.widget.TextView
+import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.crms.crmsAndroid.R
 import com.crms.crmsAndroid.databinding.FragmentAddItemBinding
-import android.widget.Spinner
 
 class AddItemFragment : Fragment() {
 
@@ -69,7 +68,7 @@ class AddItemFragment : Fragment() {
             reConBtn.visibility = View.VISIBLE
         }
 
-        resetBTN.setOnClickListener{
+        resetBTN.setOnClickListener {
             // hide the reconfirm button when it is clicked
             reConBtn.visibility = View.INVISIBLE
         }
