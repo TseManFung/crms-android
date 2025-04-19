@@ -15,7 +15,7 @@ object RetrofitClient {
         errorInterceptor.setLoginRepository(viewModel.loginRepository)
     }
     private val baseUrls = listOf(
-       "http://172.18.37.6:8787/api/",
+       //"http://172.18.37.6:8787/api/",
         "http://192.168.30.10:8787/api/",
     )
 
