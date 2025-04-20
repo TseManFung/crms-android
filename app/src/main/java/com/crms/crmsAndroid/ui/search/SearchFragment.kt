@@ -77,7 +77,12 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun setupUI() {
-        compassManager = CompassManager(requireContext())
+        compassManager = CompassManager(requireContext()).apply {
+            onHeadingChanged = { headingRad ->
+                directionCalculator.setScannerHeading(headingRad)
+            }
+        }
+        compassManager.start()
 
         // Initialize ListView
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
@@ -322,15 +327,11 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
                 directionCalculator.targetTag = targetRfid
                 Log.d("search1", "handleBtnScanClick: $targetRfid")
                 rfidScanner.readTagLoop(viewLifecycleOwner.lifecycleScope) { tag ->
-
-
+                    processTag(tag)
                     if (tag.tid == directionCalculator.targetTag) {
                         controlProgressBar(tag.rssi)
                     }
-                    processTag(tag)
                     updateDirection()
-
-
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -341,33 +342,24 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
     }
 
     private fun processTag(tag: UHFTAGInfo) {
-        // 假设tag对象包含tid和rssi属性
         val tid = tag.tid ?: return
         val rssi = tag.rssi.toDouble()
-
+        directionCalculator.setScannerHeading(compassManager.getHeadingRad())
         directionCalculator.updateTag(tid, rssi)
     }
 
     private fun updateDirection() {
-        directionCalculator.calculateDirection().let { directionRad ->
-            if (directionRad.isNaN() || directionRad.isInfinite()) {
-                return // 如果是 NaN 或無窮大，則直接返回
-            }
-            val directionDeg = Math.toDegrees(directionRad).toFloat()
-            val d = Math.abs(directionDeg - lastDirectionDeg)
-            if (d < 20 || d>120) {
-                return
-            }
-            else if (Math.abs(directionDeg - lastDirectionDeg) > 50) {
-                lastDirectionDeg += directionDeg
-                lastDirectionDeg /= 2
-                directionCalculator.normalizeAngle(lastDirectionDeg)
-                return
-            }
-            lastDirectionDeg = directionDeg
-            arrow.rotation = directionDeg + 90
-        }
+        val bearingRad = directionCalculator.calculateDirection()
+        if (!bearingRad.isFinite()) return
 
+        val relativeDeg = Math.toDegrees(
+            wrapToPi(bearingRad - directionCalculator.getScannerHeading())
+        ).toFloat()
+        val d = kotlin.math.abs(wrapDeg(relativeDeg - lastDirectionDeg))
+        if (d < 8f) return
+
+        lastDirectionDeg = relativeDeg
+        arrow.rotation = relativeDeg + 90f
     }
 
     fun controlProgressBar(value: String) {
@@ -375,21 +367,37 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
             val rssi = value.toDouble()
             val progressBar: ProgressBar = binding.progressBar
             val percentage = binding.startPercentage
-            val progress: Int = max(0, min(100, ((rssi+80)*1.81).toInt()))
+            val progress: Int = max(0, min(100, ((rssi + 80) * 1.81).toInt()))
             progressBar.progress = progress
-            percentage.text = "Estimated distance: ${
-                String.format(
-                    "%.2f",
-                    directionCalculator.getEstimatedDirection(rssi)
-                )
-            } cm"
+            val distanceCm = directionCalculator.getEstimatedDistance()
+            percentage.text = if (distanceCm.isFinite()) {
+                "Estimated distance: ${String.format("%.2f", distanceCm)} cm"
+            } else {
+                "Estimated distance: -- cm"
+            }
         } catch (e: NumberFormatException) {
             //appendTextToList("Error: Invalid number format for RSSI value: $value")
         }
     }
 
+    private fun wrapToPi(rad: Double): Double {
+        var a = rad
+        val pi = Math.PI
+        while (a > pi) a -= 2.0 * pi
+        while (a < -pi) a += 2.0 * pi
+        return a
+    }
+
+    private fun wrapDeg(deg: Float): Float {
+        var d = deg % 360f
+        if (d > 180f) d -= 360f
+        if (d < -180f) d += 360f
+        return d
+    }
+
     override fun onPause() {
         super.onPause()
+        compassManager.stop()
         binding.startPauseBtn.text = "Start to Search"
         objRfidScanner.stopReadTagLoop()
         scannedTags.clear()
@@ -411,11 +419,13 @@ class SearchFragment : Fragment(), ITriggerDown, ITriggerLongPress {
 
     override fun onResume() {
         super.onResume()
+        compassManager.start()
         stopAll()
         viewModel.clearItems()
     }
 
     override fun onDestroyView() {
+        compassManager.stop()
         super.onDestroyView()
         _binding = null
     }
